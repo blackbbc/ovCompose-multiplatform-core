@@ -25,6 +25,7 @@ atomicFu = "0.23.2-KBA-001"
 autoService = "1.0-rc6"
 autoValue = "1.6.3"
 byteBuddy = "1.12.10"
+collection = "1.4.0-KBA-001"
 asm = "9.3"
 cmake = "3.22.1"
 dagger = "2.44"
@@ -44,7 +45,7 @@ kotlinNative = "2.0.21-KBA-005"
 kotlinBinaryCompatibilityValidator = "0.13.2"
 kotlinCompileTesting = "1.4.9"
 kotlinCoroutines = "1.8.0-KBA-001"
-kotlinSerialization = "1.6.2"
+kotlinSerialization = "1.7.3-KBA-001"
 ksp = "1.9.0-1.0.12"
 ktlint = "0.46.0"
 leakcanary = "2.8.1"
@@ -101,6 +102,7 @@ asm = { module = "org.ow2.asm:asm", version.ref = "asm"}
 asmCommons = { module = "org.ow2.asm:asm-commons", version.ref = "asm"}
 byteBuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
 byteBuddyAgent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "byteBuddy" }
+collection = { module = "androidx.collection:collection", version.ref = "collection"}
 checkerframework = { module = "org.checkerframework:checker-qual", version = "2.5.3" }
 checkmark = { module = "net.saff.checkmark:checkmark", version = "0.1.6" }
 constraintLayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.0.1"}

@@ -63,6 +63,8 @@ public expect class DialogNavigator : Navigator<Destination> {
         internal val content: @Composable (NavBackStackEntry) -> Unit
     }
 
+    override fun createDestination(): Destination
+
     internal companion object {
         internal val NAME: String
     }

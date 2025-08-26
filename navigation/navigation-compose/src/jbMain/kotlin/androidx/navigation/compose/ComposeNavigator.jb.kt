@@ -48,7 +48,7 @@ public actual class ComposeNavigator : Navigator<Destination>(NAME) {
         isPop.value = false
     }
 
-    override fun createDestination(): Destination {
+    actual override fun createDestination(): Destination {
         return Destination(this) {}
     }
 
@@ -69,31 +69,26 @@ public actual class ComposeNavigator : Navigator<Destination>(NAME) {
         navigator: ComposeNavigator,
         internal actual val content:
             @Composable
-            AnimatedContentScope.(@JvmSuppressWildcards NavBackStackEntry) -> Unit
+            AnimatedContentScope.(NavBackStackEntry) -> Unit
     ) : NavDestination(navigator) {
         internal actual var enterTransition:
-            (@JvmSuppressWildcards
-            AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
+            (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
             null
 
         internal actual var exitTransition:
-            (@JvmSuppressWildcards
-            AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
+            (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
             null
 
         internal actual var popEnterTransition:
-            (@JvmSuppressWildcards
-            AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
+            (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
             null
 
         internal actual var popExitTransition:
-            (@JvmSuppressWildcards
-            AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
+            (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
             null
 
         internal actual var sizeTransform:
-            (@JvmSuppressWildcards
-            AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? =
+            (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? =
             null
     }
 

@@ -55,7 +55,7 @@ public actual class DialogNavigator : Navigator<Destination>() {
         entries.forEach { entry -> state.push(entry) }
     }
 
-    override fun createDestination(): Destination {
+    actual override fun createDestination(): Destination {
         return Destination(this) {}
     }
 

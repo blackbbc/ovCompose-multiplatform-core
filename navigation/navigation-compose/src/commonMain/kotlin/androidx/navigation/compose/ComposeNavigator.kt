@@ -97,6 +97,8 @@ public expect class ComposeNavigator : Navigator<Destination> {
         AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)?
     }
 
+    override fun createDestination(): Destination
+
     internal companion object {
         internal val NAME: String
     }

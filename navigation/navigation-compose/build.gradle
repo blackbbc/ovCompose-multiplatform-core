@@ -32,10 +32,12 @@ JetbrainsAndroidXPlugin.applyAndConfigure(project)
 
 androidXComposeMultiplatform {
     android()
-    desktop()
-    darwin()
-    js()
-    wasm()
+//    desktop()
+//    darwin()
+//    js()
+//    wasm()
+    ios()
+    ohosNative()
 }
 
 kotlin {
@@ -43,12 +45,13 @@ kotlin {
         commonMain {
             dependencies {
                 api project(":core:core-bundle")
-                implementation project(":compose:foundation:foundation-layout")
-                implementation project(":compose:animation:animation-core")
-                api project(":compose:animation:animation")
-                api project(":compose:runtime:runtime")
-                api project(":compose:runtime:runtime-saveable")
-                api project(":compose:ui:ui")
+
+                implementation "org.jetbrains.compose.foundation:foundation-layout:1.6.1-KBA-006"
+                implementation "org.jetbrains.compose.animation:animation-core:1.6.1-KBA-006"
+                api "org.jetbrains.compose.animation:animation:1.6.1-KBA-006"
+                api "org.jetbrains.compose.runtime:runtime:1.6.1-KBA-006"
+                api "org.jetbrains.compose.runtime:runtime-saveable:1.6.1-KBA-006"
+                api "org.jetbrains.compose.ui:ui:1.6.1-KBA-006"
                 api project(":lifecycle:lifecycle-common")
                 api project(":lifecycle:lifecycle-runtime")
                 api project(":lifecycle:lifecycle-runtime-compose")

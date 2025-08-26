@@ -48,31 +48,33 @@ androidXMultiplatform {
     mac()
     linux()
     ios()
-    js()
-    wasm()
+//    js()
+//    wasm()
+    ohosNative()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
 
 kotlin {
-    js {
-        browser()
-    }
-    wasmJs()
+//    js {
+//        browser()
+//    }
+//    wasmJs()
 
-    watchosArm64()
-    watchosArm32()
-    watchosX64()
-    watchosSimulatorArm64()
-    tvosArm64()
-    tvosX64()
-    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosX64()
+//    watchosSimulatorArm64()
+//    tvosArm64()
+//    tvosX64()
+//    tvosSimulatorArm64()
+    ohosArm64()
 
     sourceSets {
         commonMain {
             dependencies {
-                api project(":annotation:annotation")
-                api project(":collection:collection")
+                api(libs.androidx.annotation)
+                api(libs.collection)
                 api project(":core:core-bundle")
                 api project(":lifecycle:lifecycle-common")
                 api project(":lifecycle:lifecycle-runtime")
@@ -165,6 +167,8 @@ kotlin {
                         dependsOn(darwinMain)
                     } else if (konanTargetFamily == Family.LINUX) {
                         dependsOn(linuxMain)
+                    } else if (konanTargetFamily == Family.OHOS) {
+                        dependsOn(nativeMain)
                     } else {
                         throw new GradleException("unknown native target ${target}")
                     }

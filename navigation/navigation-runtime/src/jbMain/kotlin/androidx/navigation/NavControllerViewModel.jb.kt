@@ -40,7 +40,7 @@ internal actual class NavControllerViewModel : ViewModel(), NavViewModelStorePro
         viewModelStores.clear()
     }
 
-    override fun getViewModelStore(backStackEntryId: String): ViewModelStore {
+    actual override fun getViewModelStore(backStackEntryId: String): ViewModelStore {
         var viewModelStore = viewModelStores[backStackEntryId]
         if (viewModelStore == null) {
             viewModelStore = ViewModelStore()

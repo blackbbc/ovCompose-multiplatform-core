@@ -57,7 +57,7 @@ public expect open class NavController {
      *
      * @return The current back stack.
      */
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+//    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     @get:RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public val currentBackStack: StateFlow<List<NavBackStackEntry>>
 
