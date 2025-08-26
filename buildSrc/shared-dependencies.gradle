@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidToolsSdkCommon) // com.android.ide.common for Stable AIDL plugin
     implementation(libs.kotlinGradlePluginz)
     implementation(libs.kotlinBinaryCompatibilityValidatorGradlePlugin)
+    implementation(libs.kotlinComposeCompiler)
 
     // variety of json parsers
     implementation(libs.gson)

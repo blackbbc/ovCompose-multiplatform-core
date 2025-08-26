@@ -203,17 +203,17 @@ private fun Project.configureComponentPublishing(
             }
         }
     }
-    project.tasks.withType(GenerateMavenPom::class.java).configureEach { task ->
-        task.doLast {
-            val pomFile = task.destination
-            val pom = pomFile.readText()
-            val modifiedPom = modifyPomDependencies(pom, mavenCoordsToRedirecting.get())
-
-            if (pom != modifiedPom) {
-                pomFile.writeText(modifiedPom)
-            }
-        }
-    }
+//    project.tasks.withType(GenerateMavenPom::class.java).configureEach { task ->
+//        task.doLast {
+//            val pomFile = task.destination
+//            val pom = pomFile.readText()
+//            val modifiedPom = modifyPomDependencies(pom, mavenCoordsToRedirecting.get())
+//
+//            if (pom != modifiedPom) {
+//                pomFile.writeText(modifiedPom)
+//            }
+//        }
+//    }
 
     // Workaround for https://github.com/gradle/gradle/issues/11717
     project.tasks.withType(GenerateModuleMetadata::class.java).configureEach { task ->

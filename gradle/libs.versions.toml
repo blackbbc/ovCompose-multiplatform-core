@@ -20,7 +20,8 @@ androidxTestMonitor = "1.7.0-alpha01"
 androidxTestCore = "1.6.0-alpha01"
 androidxTestExtJunit = "1.2.0-alpha01"
 androidxTestExtTruth = "1.6.0-alpha01"
-atomicFu = "0.23.2"
+annotationVersion = "1.8.0-KBA-001"
+atomicFu = "0.23.2-KBA-001"
 autoService = "1.0-rc6"
 autoValue = "1.6.3"
 byteBuddy = "1.12.10"
@@ -37,12 +38,12 @@ guavaJre = "31.1-jre"
 hilt = "2.44"
 incap = "0.2"
 jcodec = "0.2.5"
-kotlin = "1.9.24" # Don't forget to set kotlinNative the same version
+kotlin = "2.0.21-KBA-005" # Don't forget to set kotlinNative the same version
 kotlinBenchmark = "0.4.7"
-kotlinNative = "1.9.24"
+kotlinNative = "2.0.21-KBA-005"
 kotlinBinaryCompatibilityValidator = "0.13.2"
 kotlinCompileTesting = "1.4.9"
-kotlinCoroutines = "1.8.0"
+kotlinCoroutines = "1.8.0-KBA-001"
 kotlinSerialization = "1.6.2"
 ksp = "1.9.0-1.0.12"
 ktlint = "0.46.0"
@@ -81,6 +82,7 @@ androidToolsNinepatch = { module = "com.android.tools:ninepatch", version.ref = 
 androidToolsRepository= { module = "com.android.tools:repository", version.ref = "androidLint" }
 androidToolsSdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidLint" }
 androidToolsAnalyticsProtos = { module = "com.android.tools.analytics-library:protos", version.ref = "androidLint" }
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotationVersion" }
 autoCommon = { module = "com.google.auto:auto-common", version = "0.11" }
 atomicFu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicFu" }
 atomicFuPluginz = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicFu" }
@@ -167,6 +169,7 @@ kotlinBenchmarkRuntime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-run
 kotlinBinaryCompatibilityValidatorGradlePlugin = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version.ref = "kotlinBinaryCompatibilityValidator" }
 kotlinBom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler", version.ref = "kotlin" }
+kotlinComposeCompiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlinCompilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlinCompileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
 kotlinCompileTestingKsp = { module = "com.github.tschuchortdev:kotlin-compile-testing-ksp", version.ref = "kotlinCompileTesting" }

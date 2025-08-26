@@ -47,25 +47,27 @@ androidXMultiplatform {
     mac()
     linux()
     ios()
-    js()
-    wasm()
+//    js()
+//    wasm()
+    ohosNative()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
 
 kotlin {
-    js {
-        browser()
-    }
-    wasmJs()
+//    js {
+//        browser()
+//    }
+//    wasmJs()
 
-    watchosArm64()
-    watchosArm32()
-    watchosX64()
-    watchosSimulatorArm64()
-    tvosArm64()
-    tvosX64()
-    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosX64()
+//    watchosSimulatorArm64()
+//    tvosArm64()
+//    tvosX64()
+//    tvosSimulatorArm64()
+    ohosArm64()
     // TODO: mingwX64 requires Lock actual implementation.
     //  Or copy approach from :collection:collection - use unstable atomicFu
 
@@ -78,7 +80,7 @@ kotlin {
 
         commonMain {
             dependencies {
-                api "org.jetbrains.compose.annotation-internal:annotation:1.6.11"
+                api(libs.androidx.annotation)
                 api(libs.kotlinStdlib)
                 api(libs.kotlinCoroutinesCore)
             }
@@ -145,6 +147,8 @@ kotlin {
                         dependsOn(darwinMain)
                     } else if (konanTargetFamily == Family.LINUX) {
                         dependsOn(linuxMain)
+                    } else if (konanTargetFamily == Family.OHOS) {
+                        dependsOn(nativeMain)
                     } else {
                         throw new GradleException("unknown native target ${target}")
                     }

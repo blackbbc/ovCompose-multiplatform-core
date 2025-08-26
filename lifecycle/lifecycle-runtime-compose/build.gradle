@@ -38,32 +38,35 @@ JetbrainsAndroidXPlugin.applyAndConfigure(project)
 
 androidXComposeMultiplatform {
     android()
-    desktop()
-    darwin()
-    js()
-    wasm()
+//    desktop()
+//    darwin()
+//    js()
+//    wasm()
 
-    linuxX64()
-    linuxArm64()
+//    linuxX64()
+//    linuxArm64()
+    ios()
+    ohosNative()
 }
 
 kotlin {
-    watchosArm64()
-    watchosArm32()
-    watchosX64()
-    watchosSimulatorArm64()
-    tvosArm64()
-    tvosX64()
-    tvosSimulatorArm64()
-    mingwX64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosX64()
+//    watchosSimulatorArm64()
+//    tvosArm64()
+//    tvosX64()
+//    tvosSimulatorArm64()
+//    mingwX64()
+    ohosArm64()
 
     sourceSets {
         commonMain {
             dependencies {
-                api "org.jetbrains.compose.annotation-internal:annotation:1.6.11"
+                api(libs.androidx.annotation)
                 implementation(project(":lifecycle:lifecycle-common"))
                 api project(":lifecycle:lifecycle-runtime")
-                api "org.jetbrains.compose.runtime:runtime:1.6.11"
+                api "org.jetbrains.compose.runtime:runtime:1.6.1-KBA-006"
 
                 implementation(libs.kotlinStdlib)
             }

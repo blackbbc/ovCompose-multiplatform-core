@@ -25,31 +25,33 @@ androidXMultiplatform {
     mac()
     linux()
     ios()
-    js()
-    wasm()
+//    js()
+//    wasm()
+    ohosNative()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
 
 kotlin {
-    js {
-        browser()
-    }
-    wasmJs()
+//    js {
+//        browser()
+//    }
+//    wasmJs()
 
-    watchosArm64()
-    watchosArm32()
-    watchosX64()
-    watchosSimulatorArm64()
-    tvosArm64()
-    tvosX64()
-    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosX64()
+//    watchosSimulatorArm64()
+//    tvosArm64()
+//    tvosX64()
+//    tvosSimulatorArm64()
+    ohosArm64()
 
     sourceSets {
         commonMain {
             dependencies {
                 api(libs.kotlinStdlib)
-                api "org.jetbrains.compose.annotation-internal:annotation:1.6.11"
+                api(libs.androidx.annotation)
                 api(project(":core:core-bundle"))
                 api(project(":lifecycle:lifecycle-common"))
             }

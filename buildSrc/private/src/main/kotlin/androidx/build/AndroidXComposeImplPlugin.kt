@@ -47,6 +47,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.tooling.core.withClosure
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
 const val composeSourceOption =
     "plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true"
@@ -87,7 +89,8 @@ class AndroidXComposeImplPlugin : Plugin<Project> {
                     project.configureAndroidCommonOptions(app)
                 }
                 is KotlinBasePluginWrapper -> {
-                    configureComposeCompilerPlugin(project, extension)
+                    configureComposeForK2(project, extension)
+//                    configureComposeCompilerPlugin(project, extension)
 
                     if (plugin is KotlinMultiplatformPluginWrapper) {
                         project.configureForMultiplatform()
@@ -435,6 +438,56 @@ private fun configureComposeCompilerPlugin(
                 true
             }
         }
+    }
+}
+
+private fun configureComposeForK2(
+    project: Project,
+    extension: AndroidXComposeExtension
+) {
+    project.afterEvaluate {
+        if (!extension.composeCompilerPluginEnabled) return@afterEvaluate
+
+        val androidXExt = project.extensions.findByType(AndroidXExtension::class.java)
+            ?: error("You have applied AndroidXComposePlugin without AndroidXPlugin")
+        val shouldPublish = androidXExt.shouldPublish()
+
+        // 1) 确保已应用 Compose 编译器 Gradle 插件（与 Kotlin 插件同版本）
+        if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.plugin.compose")) {
+            project.pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        }
+
+        // 2) 使用 composeCompiler {} DSL 配置选项（取代旧的 pluginOptions）
+        val cc = project.extensions.getByType(
+            ComposeCompilerGradlePluginExtension::class.java
+        )
+
+        // 旧代码里: SourceOption("sourceInformation") → 新 DSL:
+        cc.includeSourceInformation.set(shouldPublish)
+
+        // 旧代码里: NonSkippingGroupOption(true) → 新 DSL 的 featureFlags:
+        cc.featureFlags.set(
+            setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
+            // 如需强跳过模式：可选加 ComposeFeatureFlag.StrongSkipping
+            // 或禁用：ComposeFeatureFlag.StrongSkipping.disabled()
+        )
+
+        // metrics / reports：直接用 DSL 的目标目录
+//        if (project.enableComposeCompilerMetrics()) {
+//            cc.metricsDestination.set(project.layout.dir { it.set(project.compilerMetricsIntermediatesDir()) })
+//        }
+//        if (project.enableComposeCompilerReports()) {
+//            cc.reportsDestination.set(project.layout.dir { it.set(project.compilerReportsIntermediatesDir()) })
+//        }
+
+        // 3) 如果你仍需要把 zip 任务串上依赖，可保留原有逻辑
+//        val compileTasks = project.tasks.withType(KotlinCompile::class.java)
+//        if (project.enableComposeCompilerMetrics()) {
+//            project.rootProject.tasks.named(zipComposeMetricsTaskName).configure { it.dependsOn(compileTasks) }
+//        }
+//        if (project.enableComposeCompilerReports()) {
+//            project.rootProject.tasks.named(zipComposeReportsTaskName).configure { it.dependsOn(compileTasks) }
+//        }
     }
 }
 

@@ -264,7 +264,7 @@ open class AndroidXMultiplatformExtension(val project: Project) {
     ): List<KotlinNativeTarget> {
         return listOfNotNull(
             linuxX64(block),
-            linuxArm64(block),
+//            linuxArm64(block),
         )
     }
 
@@ -320,6 +320,20 @@ open class AndroidXMultiplatformExtension(val project: Project) {
             null
         }
     }
+
+    @JvmOverloads
+    fun ohosArm64(block: Action<KotlinNativeTarget>? = null): KotlinNativeTarget? {
+        requestedPlatforms.add(PlatformIdentifier.OHOS_ARM_64)
+        return if (project.enableOhosNative()) {
+            if (block == null) kotlinExtension.ohosArm64() else kotlinExtension.ohosArm64(block)
+        } else {
+            null
+        }
+    }
+
+    @JvmOverloads
+    fun ohosNative(block: Action<KotlinNativeTarget>? = null): List<KotlinNativeTarget> =
+        listOfNotNull(ohosArm64(block))
 
     companion object {
         const val EXTENSION_NAME = "androidXMultiplatform"

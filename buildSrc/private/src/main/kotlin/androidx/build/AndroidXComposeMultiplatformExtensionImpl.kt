@@ -213,12 +213,53 @@ open class AndroidXComposeMultiplatformExtensionImpl @Inject constructor(
         uikitSimArm64Test.dependsOn(uikitTest)
     }
 
+    override fun ios(): Unit = multiplatformExtension.run {
+        iosX64("uikitX64")
+        iosArm64("uikitArm64")
+        iosSimulatorArm64("uikitSimArm64")
+
+        val commonMain = sourceSets.getByName("commonMain")
+        val nativeMain = sourceSets.create("nativeMain")
+        val darwinMain = sourceSets.create("darwinMain")
+//        val uikitMain = sourceSets.create("uikitMain")
+//        val uikitX64Main = sourceSets.getByName("uikitX64Main")
+//        val uikitArm64Main = sourceSets.getByName("uikitArm64Main")
+//        val uikitSimArm64Main = sourceSets.getByName("uikitSimArm64Main")
+        nativeMain.dependsOn(commonMain)
+        darwinMain.dependsOn(nativeMain)
+//        uikitMain.dependsOn(darwinMain)
+//        uikitX64Main.dependsOn(uikitMain)
+//        uikitArm64Main.dependsOn(uikitMain)
+//        uikitSimArm64Main.dependsOn(uikitMain)
+
+        val commonTest = sourceSets.getByName("commonTest")
+        val nativeTest = sourceSets.create("nativeTest")
+        val darwinTest = sourceSets.create("darwinTest")
+//        val uikitTest = sourceSets.create("uikitTest")
+//        val uikitX64Test = sourceSets.getByName("uikitX64Test")
+//        val uikitArm64Test = sourceSets.getByName("uikitArm64Test")
+//        val uikitSimArm64Test = sourceSets.getByName("uikitSimArm64Test")
+        nativeTest.dependsOn(commonTest)
+        darwinTest.dependsOn(nativeTest)
+//        uikitTest.dependsOn(darwinTest)
+//        uikitX64Test.dependsOn(uikitTest)
+//        uikitArm64Test.dependsOn(uikitTest)
+//        uikitSimArm64Test.dependsOn(uikitTest)
+    }
+
     override fun linuxX64(): Unit = multiplatformExtension.run {
         linuxX64()
     }
 
     override fun linuxArm64(): Unit = multiplatformExtension.run {
         linuxArm64()
+    }
+
+    override fun ohosNative(): Unit = multiplatformExtension.run {
+        ohosArm64()
+        val nativeMain = sourceSets.getByName("nativeMain")
+        val ohosMain = sourceSets.getByName("ohosArm64Main")
+        ohosMain.dependsOn(nativeMain)
     }
 
     private fun getOrCreateJvmMain(): KotlinSourceSet =

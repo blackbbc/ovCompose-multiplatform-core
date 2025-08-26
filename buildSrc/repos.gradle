@@ -60,6 +60,9 @@ def addMavenRepositories(RepositoryHandler handler) {
     def isJBFork = true
     if (isJBFork) {
         handler.mavenCentral()
+        handler.maven {
+            url = "https://mirrors.tencent.com/nexus/repository/maven-public"
+        }
         // Keep mavenLocal() repository below mavenCentral to avoid issues with stdlib imports
         handler.mavenLocal()
         handler.google()

@@ -39,10 +39,12 @@ JetbrainsAndroidXPlugin.applyAndConfigure(project)
 
 androidXComposeMultiplatform {
     android()
-    desktop()
-    darwin()
-    js()
-    wasm()
+//    desktop()
+//    darwin()
+//    js()
+//    wasm()
+    ios()
+    ohosNative()
 }
 
 kotlin {
@@ -53,9 +55,9 @@ kotlin {
                 api project(":lifecycle:lifecycle-viewmodel")
                 api project(":lifecycle:lifecycle-viewmodel-savedstate")
                 api project(":savedstate:savedstate")
-                api "org.jetbrains.compose.runtime:runtime:1.6.11"
-                api "org.jetbrains.compose.runtime:runtime-saveable:1.6.11"
-                api "org.jetbrains.compose.ui:ui:1.6.11"
+                api "org.jetbrains.compose.runtime:runtime:1.6.1-KBA-006"
+                api "org.jetbrains.compose.runtime:runtime-saveable:1.6.1-KBA-006"
+                api "org.jetbrains.compose.ui:ui:1.6.1-KBA-006"
 
                 implementation(libs.kotlinStdlib)
                 implementation project(":core:core-bundle")
@@ -78,16 +80,24 @@ kotlin {
         nativeMain.dependsOn(jbMain)
 
         webMain.dependsOn(jbMain)
-        jsMain.dependsOn(webMain)
-        wasmJsMain.dependsOn(webMain)
+//        jsMain.dependsOn(webMain)
+//        wasmJsMain.dependsOn(webMain)
 
         targets.all { target ->
-            if (target.platformType !in [KotlinPlatformType.androidJvm, KotlinPlatformType.common]) {
+            if (target.platformType == KotlinPlatformType.native) {
                 target.compilations["main"].defaultSourceSet {
-                    dependsOn(jbMain)
+                    dependsOn(nativeMain)
                 }
             }
         }
+
+//        targets.all { target ->
+//            if (target.platformType !in [KotlinPlatformType.androidJvm, KotlinPlatformType.common]) {
+//                target.compilations["main"].defaultSourceSet {
+//                    dependsOn(jbMain)
+//                }
+//            }
+//        }
     }
 }
 
