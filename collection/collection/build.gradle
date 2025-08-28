@@ -38,6 +38,7 @@ androidXComposeMultiplatform {
 
     linuxX64()
     linuxArm64()
+    ohosNative()
 }
 
 kotlin {
@@ -54,6 +55,7 @@ kotlin {
     tvosX64()
     tvosSimulatorArm64()
     mingwX64()
+    ohosArm64()
 
     sourceSets {
         all {

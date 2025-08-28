@@ -1,6 +1,6 @@
 [versions]
 ACTIVITY = "1.9.0-alpha01"
-ANNOTATION = "1.8.0"
+ANNOTATION = "1.8.0-KBA-001"
 ANNOTATION_EXPERIMENTAL = "1.4.0-alpha01"
 APPACTIONS_BUILTINTYPES = "1.0.0-alpha01"
 APPACTIONS_INTERACTION = "1.0.0-alpha01"
@@ -19,7 +19,7 @@ CAMERA_PIPE = "1.0.0-alpha01"
 CAMERA_TESTING = "1.0.0-alpha01"
 CARDVIEW = "1.1.0-alpha01"
 CAR_APP = "1.7.0-alpha01"
-COLLECTION = "1.4.0"
+COLLECTION = "1.4.0-KBA-001"
 COMPOSE = "1.7.6"
 COMPOSE_COMPILER = "1.5.4"
 COMPOSE_MATERIAL3 = "1.3.1"
@@ -172,7 +172,7 @@ WORK = "2.10.0-alpha01"
 
 [groups]
 ACTIVITY = { group = "androidx.activity", atomicGroupVersion = "versions.ACTIVITY" }
-ANNOTATION = { group = "androidx.annotation" }
+ANNOTATION = { group = "androidx.annotation", atomicGroupVersion = "versions.ANNOTATION" }
 APPACTIONS_BUILTINTYPES = { group = "androidx.appactions.builtintypes", atomicGroupVersion = "versions.APPACTIONS_BUILTINTYPES" }
 APPACTIONS_INTERACTION = { group = "androidx.appactions.interaction", atomicGroupVersion = "versions.APPACTIONS_INTERACTION" }
 APPCOMPAT = { group = "androidx.appcompat", atomicGroupVersion = "versions.APPCOMPAT" }
@@ -298,8 +298,8 @@ WINDOW_SIDECAR = { group = "androidx.window.sidecar", atomicGroupVersion = "vers
 WORK = { group = "androidx.work", atomicGroupVersion = "versions.WORK" }
 
 # JetBrains overrides
-ANNOTATION_JETBRAINS = { group = "org.jetbrains.compose.annotation-internal", atomicGroupVersion = "versions.COMPOSE", overrideInclude = [ ":annotation:annotation" ] }
-COLLECTION_JETBRAINS = { group = "org.jetbrains.compose.collection-internal", atomicGroupVersion = "versions.COMPOSE", overrideInclude = [ ":collection:collection" ] }
+#ANNOTATION_JETBRAINS = { group = "org.jetbrains.compose.annotation-internal", atomicGroupVersion = "versions.COMPOSE", overrideInclude = [ ":annotation:annotation" ] }
+#COLLECTION_JETBRAINS = { group = "org.jetbrains.compose.collection-internal", atomicGroupVersion = "versions.COMPOSE", overrideInclude = [ ":collection:collection" ] }
 
 CORE_BUNDLE_JETBRAINS = { group = "org.jetbrains.androidx.core", atomicGroupVersion = "versions.CORE_BUNDLE", overrideInclude = [ ":core:core-bundle" ] }
 SAVEDSTATE_JETBRAINS = { group = "org.jetbrains.androidx.savedstate", atomicGroupVersion = "versions.SAVEDSTATE", overrideInclude = [ ":savedstate:savedstate" ] }
