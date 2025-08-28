@@ -42,7 +42,7 @@ internal constructor(
     public actual constructor(
         navigator: Navigator<out D>,
         @Suppress("OptionalBuilderConstructorArgument") route: KClass<*>?,
-        typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>,
+        typeMap: Map<KType, NavType<*>>,
     ) : this(
         navigator,
         route?.serializer()?.generateHashCode() ?: -1,
@@ -76,7 +76,6 @@ internal constructor(
     }
 
     @Suppress("BuilderSetStyle")
-    @JvmName("deepLinkSafeArgs")
     public actual inline fun <reified T : Any> deepLink(
         basePath: String,
     ) {

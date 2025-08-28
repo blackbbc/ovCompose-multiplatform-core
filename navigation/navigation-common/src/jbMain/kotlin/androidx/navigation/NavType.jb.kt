@@ -65,7 +65,6 @@ public actual abstract class NavType<T> actual constructor(
 
     public actual companion object {
         @Suppress("NON_FINAL_MEMBER_IN_OBJECT")
-        @JvmStatic
         public actual open fun fromArgType(type: String?, packageName: String?): NavType<*> {
             return when (type) {
                 IntType.name -> IntType
@@ -95,7 +94,6 @@ public actual abstract class NavType<T> actual constructor(
         }
 
         @Suppress("UNCHECKED_CAST") // needed for cast to NavType<Any>
-        @JvmStatic
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
         public actual fun inferFromValue(value: String): NavType<Any> {
             // because we allow Long literals without the L suffix at runtime,
@@ -128,7 +126,6 @@ public actual abstract class NavType<T> actual constructor(
         }
 
         @Suppress("UNCHECKED_CAST") // needed for cast to NavType<Any>
-        @JvmStatic
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
         public actual fun inferFromValueType(value: Any?): NavType<Any> {
             return when (value) {
@@ -148,7 +145,6 @@ public actual abstract class NavType<T> actual constructor(
             }
         }
 
-        @JvmField
         public actual val IntType: NavType<Int> =
             object : NavType<Int>(false) {
                 override val name: String
@@ -172,7 +168,6 @@ public actual abstract class NavType<T> actual constructor(
                 }
             }
 
-        @JvmField
         public actual val IntArrayType: NavType<IntArray?> =
             object : CollectionNavType<IntArray?>(true) {
                 override val name: String
@@ -207,7 +202,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): IntArray = intArrayOf()
             }
 
-        @JvmField
         public actual val IntListType: NavType<List<Int>?> =
             object : CollectionNavType<List<Int>?>(true) {
                 override val name: String
@@ -242,7 +236,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): List<Int> = emptyList()
             }
 
-        @JvmField
         public actual val LongType: NavType<Long> =
             object : NavType<Long>(false) {
                 override val name: String
@@ -273,7 +266,6 @@ public actual abstract class NavType<T> actual constructor(
                 }
             }
 
-        @JvmField
         public actual val LongArrayType: NavType<LongArray?> =
             object : CollectionNavType<LongArray?>(true) {
                 override val name: String
@@ -308,7 +300,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): LongArray = longArrayOf()
             }
 
-        @JvmField
         public actual val LongListType: NavType<List<Long>?> =
             object : CollectionNavType<List<Long>?>(true) {
                 override val name: String
@@ -343,7 +334,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): List<Long> = emptyList()
             }
 
-        @JvmField
         public actual val FloatType: NavType<Float> =
             object : NavType<Float>(false) {
                 override val name: String
@@ -363,7 +353,6 @@ public actual abstract class NavType<T> actual constructor(
                 }
             }
 
-        @JvmField
         public actual val FloatArrayType: NavType<FloatArray?> =
             object : CollectionNavType<FloatArray?>(true) {
                 override val name: String
@@ -398,7 +387,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): FloatArray = floatArrayOf()
             }
 
-        @JvmField
         public actual val FloatListType: NavType<List<Float>?> =
             object : CollectionNavType<List<Float>?>(true) {
                 override val name: String
@@ -433,7 +421,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): List<Float> = emptyList()
             }
 
-        @JvmField
         public actual val BoolType: NavType<Boolean> =
             object : NavType<Boolean>(false) {
                 override val name: String
@@ -461,7 +448,6 @@ public actual abstract class NavType<T> actual constructor(
                 }
             }
 
-        @JvmField
         public actual val BoolArrayType: NavType<BooleanArray?> =
             object : CollectionNavType<BooleanArray?>(true) {
                 override val name: String
@@ -499,7 +485,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): BooleanArray = booleanArrayOf()
             }
 
-        @JvmField
         public actual val BoolListType: NavType<List<Boolean>?> =
             object : CollectionNavType<List<Boolean>?>(true) {
                 override val name: String
@@ -537,7 +522,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): List<Boolean> = emptyList()
             }
 
-        @JvmField
         public actual val StringType: NavType<String?> =
             object : NavType<String?>(true) {
                 override val name: String
@@ -573,7 +557,6 @@ public actual abstract class NavType<T> actual constructor(
                 }
             }
 
-        @JvmField
         public actual val StringArrayType: NavType<Array<String>?> =
             object : CollectionNavType<Array<String>?>(true) {
                 override val name: String
@@ -609,7 +592,6 @@ public actual abstract class NavType<T> actual constructor(
                 override fun emptyCollection(): Array<String> = arrayOf()
             }
 
-        @JvmField
         public actual val StringListType: NavType<List<String>?> =
             object : CollectionNavType<List<String>?>(true) {
                 override val name: String

@@ -372,7 +372,6 @@ public actual open class NavGraph actual constructor(navGraphNavigator: Navigato
     }
 
     public actual companion object {
-        @JvmStatic
         public actual fun NavGraph.findStartDestination(): NavDestination = childHierarchy().last()
 
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

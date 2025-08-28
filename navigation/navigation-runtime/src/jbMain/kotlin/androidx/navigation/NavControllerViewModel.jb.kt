@@ -69,7 +69,6 @@ internal actual class NavControllerViewModel : ViewModel(), NavViewModelStorePro
             initializer { NavControllerViewModel() }
         }
 
-        @JvmStatic
         actual fun getInstance(viewModelStore: ViewModelStore): NavControllerViewModel {
             val viewModelProvider = ViewModelProvider.create(viewModelStore, FACTORY)
             return viewModelProvider.get()

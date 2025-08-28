@@ -374,7 +374,7 @@ internal actual constructor(
 
         public actual inline fun <reified T : Any> setUriPattern(
             basePath: String,
-            typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>,
+            typeMap: Map<KType, NavType<*>>,
         ): Builder = setUriPattern(basePath, T::class, typeMap)
 
         @OptIn(InternalSerializationApi::class)
@@ -405,24 +405,21 @@ internal actual constructor(
         }
 
         internal actual companion object {
-            @JvmStatic
             actual fun fromUriPattern(uriPattern: String): Builder {
                 val builder = Builder()
                 builder.setUriPattern(uriPattern)
                 return builder
             }
 
-            @JvmStatic
             actual inline fun <reified T : Any> fromUriPattern(
                 basePath: String,
-                typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>,
+                typeMap: Map<KType, NavType<*>>,
             ): Builder {
                 val builder = Builder()
                 builder.setUriPattern(basePath, T::class, typeMap)
                 return builder
             }
 
-            @JvmStatic
             actual fun fromAction(action: String): Builder {
                 // if the action given at runtime is empty we should throw
                 require(action.isNotEmpty()) { "The NavDeepLink cannot have an empty action." }
@@ -431,7 +428,6 @@ internal actual constructor(
                 return builder
             }
 
-            @JvmStatic
             actual fun fromMimeType(mimeType: String): Builder {
                 val builder = Builder()
                 builder.setMimeType(mimeType)

@@ -261,7 +261,6 @@ public actual open class NavDestination actual constructor(
     }
 
     public actual companion object {
-        @JvmStatic
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
         public fun getDisplayName(id: Int): String = "0x${id.toString(16)}"
 
@@ -269,16 +268,13 @@ public actual open class NavDestination actual constructor(
         public fun createRoute(route: String?): String =
             if (route != null) "multiplatform-app://androidx.navigation/$route" else ""
 
-        @JvmStatic
         public actual val NavDestination.hierarchy: Sequence<NavDestination>
             get() = generateSequence(this) { it.parent }
 
-        @JvmStatic
         public actual inline fun <reified T : Any> NavDestination.hasRoute(): Boolean =
             hasRoute(T::class)
 
         @OptIn(InternalSerializationApi::class)
-        @JvmStatic
         public actual fun <T : Any> NavDestination.hasRoute(route: KClass<T>): Boolean =
             route.serializer().generateHashCode() == id
     }

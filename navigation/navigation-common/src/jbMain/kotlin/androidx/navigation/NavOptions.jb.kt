@@ -212,7 +212,6 @@ internal constructor(
          * @see NavOptions.isPopUpToInclusive
          */
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-        @JvmOverloads
         public fun setPopUpTo(
             destinationId: Int,
             inclusive: Boolean,
@@ -225,7 +224,6 @@ internal constructor(
             return this
         }
 
-        @JvmOverloads
         public actual fun setPopUpTo(
             route: String?,
             inclusive: Boolean,
@@ -238,7 +236,6 @@ internal constructor(
             return this
         }
 
-        @JvmOverloads
         @Suppress("MissingGetterMatchingBuilder") // no need for getter
         public actual inline fun <reified T : Any> setPopUpTo(
             inclusive: Boolean,
@@ -263,7 +260,6 @@ internal constructor(
             return this
         }
 
-        @JvmOverloads
         @Suppress("MissingGetterMatchingBuilder")
         @OptIn(InternalSerializationApi::class)
         public actual fun <T : Any> setPopUpTo(

@@ -336,7 +336,6 @@ public actual open class NavController {
     }
 
     @MainThread
-    @JvmOverloads
     public actual fun popBackStack(
         route: String,
         inclusive: Boolean,
@@ -349,7 +348,6 @@ public actual open class NavController {
     }
 
     @MainThread
-    @JvmOverloads
     public actual inline fun <reified T : Any> popBackStack(
         inclusive: Boolean,
         saveState: Boolean
@@ -363,7 +361,6 @@ public actual open class NavController {
     }
 
     @MainThread
-    @JvmOverloads
     public actual fun <T : Any> popBackStack(
         route: T,
         inclusive: Boolean,
@@ -1423,7 +1420,6 @@ public actual open class NavController {
     }
 
     @MainThread
-    @JvmOverloads
     public actual fun navigate(
         route: String,
         navOptions: NavOptions?,
@@ -1442,7 +1438,6 @@ public actual open class NavController {
     }
 
     @MainThread
-    @JvmOverloads
     public actual fun <T : Any> navigate(
         route: T,
         navOptions: NavOptions?,

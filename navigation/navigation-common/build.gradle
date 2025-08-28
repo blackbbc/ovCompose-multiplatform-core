@@ -44,9 +44,9 @@ def wasmEnabled = KmpPlatformsKt.enableWasm(project)
 
 androidXMultiplatform {
     android()
-    desktop()
-    mac()
-    linux()
+//    desktop()
+//    mac()
+//    linux()
     ios()
 //    js()
 //    wasm()

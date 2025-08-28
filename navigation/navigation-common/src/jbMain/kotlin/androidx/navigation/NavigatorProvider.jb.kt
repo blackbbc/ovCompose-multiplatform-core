@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:JvmName("NavigatorProviderKt")
-@file:JvmMultifileClass
 
 package androidx.navigation
 
