@@ -23,7 +23,9 @@ import androidx.compose.export.annotation.InternalExportApi
 import androidx.compose.ui.arkui._ArkUIViewController_aboutToAppear
 import androidx.compose.ui.arkui._ArkUIViewController_aboutToDisappear
 import androidx.compose.ui.arkui._ArkUIViewController_cancelSyncRefresh
+import androidx.compose.ui.arkui._ArkUIViewController_dispatchAxisEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchHoverEvent
+import androidx.compose.ui.arkui._ArkUIViewController_dispatchKeyEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchMouseEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchTouchEvent
 import androidx.compose.ui.arkui._ArkUIViewController_getId
@@ -188,8 +190,24 @@ fun _Export_ArkUIViewController_dispatchTouchEvent(
 
 @InternalExportApi
 @CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchMouseEvent")
-fun _Export_ArkUIViewController_dispatchMouseEvent(controllerRef: COpaquePointer) =
-    _ArkUIViewController_dispatchMouseEvent(controllerRef)
+fun _Export_ArkUIViewController_dispatchMouseEvent(
+    controllerRef: COpaquePointer,
+    nativeMouseEvent: napi_value,
+): Boolean = _ArkUIViewController_dispatchMouseEvent(controllerRef, nativeMouseEvent)
+
+@InternalExportApi
+@CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchAxisEvent")
+fun _Export_ArkUIViewController_dispatchAxisEvent(
+    controllerRef: COpaquePointer,
+    nativeAxisEvent: napi_value,
+): Boolean = _ArkUIViewController_dispatchAxisEvent(controllerRef, nativeAxisEvent)
+
+@InternalExportApi
+@CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyEvent")
+fun _Export_ArkUIViewController_dispatchKeyEvent(
+    controllerRef: COpaquePointer,
+    nativeKeyEvent: napi_value,
+): Boolean = _ArkUIViewController_dispatchKeyEvent(controllerRef, nativeKeyEvent)
 
 @InternalExportApi
 @CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchHoverEvent")

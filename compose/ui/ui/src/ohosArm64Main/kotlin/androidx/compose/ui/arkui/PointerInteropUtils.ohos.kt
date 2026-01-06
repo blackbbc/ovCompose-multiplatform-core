@@ -49,6 +49,12 @@ class TouchEvent(nativeEvent: napi_value?) : JsObject(nativeEvent) {
     }
 }
 
+class MouseEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
+
+class AxisEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
+
+class KeyEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
+
 /**
  * Converts to a [TouchEvent] and runs [block] with it.
  *

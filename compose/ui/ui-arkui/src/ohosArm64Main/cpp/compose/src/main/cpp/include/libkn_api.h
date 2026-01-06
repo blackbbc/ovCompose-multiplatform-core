@@ -32,8 +32,10 @@ extern void androidx_compose_ui_arkui_ArkUIViewController_aboutToAppear(void* co
 extern void androidx_compose_ui_arkui_ArkUIViewController_aboutToDisappear(void* controllerRef);
 extern void androidx_compose_ui_arkui_ArkUIViewController_cancelSyncRefresh(void* controllerRef, int refreshId);
 extern void androidx_compose_ui_arkui_ArkUIViewController_dispatchHoverEvent(void* controllerRef);
-extern void androidx_compose_ui_arkui_ArkUIViewController_dispatchMouseEvent(void* controllerRef);
+extern KBoolean androidx_compose_ui_arkui_ArkUIViewController_dispatchMouseEvent(void* controllerRef, void* nativeMouseEvent);
 extern KBoolean androidx_compose_ui_arkui_ArkUIViewController_dispatchTouchEvent(void* controllerRef, void* nativeTouchEvent, KBoolean ignoreInteropView);
+extern KBoolean androidx_compose_ui_arkui_ArkUIViewController_dispatchAxisEvent(void* controllerRef, void* nativeAxisEvent);
+extern KBoolean androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyEvent(void* controllerRef, void* nativeKeyEvent);
 extern const char* androidx_compose_ui_arkui_ArkUIViewController_getId(void* controllerRef);
 extern void* androidx_compose_ui_arkui_ArkUIViewController_getXComponentRender(void* controllerRef);
 extern void androidx_compose_ui_arkui_ArkUIViewController_keyboardWillHide(void* controllerRef);

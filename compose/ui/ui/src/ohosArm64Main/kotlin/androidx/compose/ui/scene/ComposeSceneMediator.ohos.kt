@@ -24,10 +24,14 @@ import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.arkui.AxisEvent
 import androidx.compose.ui.arkui.InternalArkUIViewController
+import androidx.compose.ui.arkui.MouseEvent
 import androidx.compose.ui.arkui.TouchEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.HistoricalChange
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerButtons
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
@@ -184,6 +188,7 @@ internal class ComposeSceneMediator(
         activeChangedPointers.putAll(changedPointers.associateBy { it.id })
         val pointers = activeChangedPointers.values.toList()
 
+//        println("sendPointerEvent, type:${eventType}")
         OhosTrace.traceSync("sendPointerEvent") {
             scene.sendPointerEvent(
                 eventType = eventType,
@@ -195,6 +200,57 @@ internal class ComposeSceneMediator(
         return true
     }
 
+    @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
+    fun sendMouseEvent(env: napi_env, event: napi_value): Boolean {
+        OhosTrace.traceSync("sendMouseEvent") {
+            val density = scene.density.density
+//            val offset = Offset(event.x * density, event.y * density)
+//            println("sendMouseEvent, type:${event.mouseEventType}, x: ${offset.x}, y: ${offset.y}")
+            scene.sendPointerEvent(
+                eventType = event.mouseEventType,
+                timeMillis = event.timestamp,
+                position = Offset(event.x * density, event.y * density),
+                nativeEvent = MouseEvent(event),
+                buttons = event.buttons,
+                button = event.button
+            )
+        }
+        return true
+    }
+
+    @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
+    fun sendAxisEvent(env: napi_env, event: napi_value): Boolean {
+        OhosTrace.traceSync("sendAxisEvent") {
+            val density = scene.density.density
+            var scrollX = event.scrollX
+            var scrollY = event.scrollY
+            if (scrollX > 0) {
+                scrollX = 1f
+            } else if (scrollX < 0) {
+                scrollX = -1f
+            }
+            if (scrollY > 0) {
+                scrollY = 1f
+            } else if (scrollY < 0) {
+                scrollY = -1f
+            }
+//            val scrollDelta = Offset(event.scrollX, event.scrollY)
+//            println("sendAxisEvent, type:${event.axisEventType}, x: ${scrollDelta.x}, y: ${scrollDelta.y}, density:${density}")
+            scene.sendPointerEvent(
+                eventType = event.axisEventType,
+                timeMillis = event.timestamp,
+                position = Offset(event.x * density, event.y * density),
+                scrollDelta = Offset(scrollX, scrollY),
+                nativeEvent = AxisEvent(event),
+            )
+        }
+        return true
+    }
+
+    @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
+    fun sendKeyEvent(env: napi_env, event: napi_value): Boolean {
+        return true
+    }
 
     @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
     private fun suppressGCIfNeed(eventType: PointerEventType) {
@@ -234,12 +290,93 @@ internal class ComposeSceneMediator(
                 return (nanoTime / 1E6).toLong()
             }
 
+        private val napi_value.mouseEventType: PointerEventType
+            get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "action"), -1).asMouseEventType()
+
+        private val napi_value.axisEventType: PointerEventType
+            get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "action"), -1).asAxisEventType()
+
+        private val napi_value.x: Float
+            get() = JsEnv.getValueFloat(JsEnv.getNamedProperty(this, "x")) ?: 0f
+
+        private val napi_value.y: Float
+            get() = JsEnv.getValueFloat(JsEnv.getNamedProperty(this, "y")) ?: 0f
+
+        private val napi_value.button: PointerButton
+            get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "button"), -1).asPointerButton()
+
+        private val napi_value.buttons: PointerButtons
+            get() {
+                var isPrimaryPressed = false
+                var isSecondaryPressed = false
+                var isTertiaryPressed = false
+                var isBackPressed = false
+                var isForwardPressed = false
+
+                JsEnv.getNamedProperty(this, "pressedButtons")?.forEachArray {
+                    if (it == null) return@forEachArray
+                    val button = it.button
+                    when (button) {
+                        PointerButton.Primary -> isPrimaryPressed = true
+                        PointerButton.Secondary -> isSecondaryPressed = true
+                        PointerButton.Tertiary -> isTertiaryPressed = true
+                        PointerButton.Back -> isBackPressed = true
+                        PointerButton.Forward -> isForwardPressed = true
+                    }
+                }
+
+                return PointerButtons(
+                    isPrimaryPressed = isPrimaryPressed,
+                    isSecondaryPressed = isSecondaryPressed,
+                    isTertiaryPressed = isTertiaryPressed,
+                    isBackPressed = isBackPressed,
+                    isForwardPressed = isForwardPressed
+                )
+            }
+
+        private val napi_value.scrollX: Float
+            get() {
+                val horizontalAxisValue = JsEnv.callFunction(this, JsEnv.getNamedProperty(this, "getHorizontalAxisValue"))
+                return JsEnv.getValueFloat(horizontalAxisValue) ?: 0f
+            }
+
+        private val napi_value.scrollY: Float
+            get() {
+                val verticalAxisValue = JsEnv.callFunction(this, JsEnv.getNamedProperty(this, "getVerticalAxisValue"))
+                return JsEnv.getValueFloat(verticalAxisValue) ?: 0f
+            }
+
         private fun Int.asPointerEventType(): PointerEventType = when (this) {
             0 -> PointerEventType.Press // TouchType.Down
             1 -> PointerEventType.Release // Up
             2 -> PointerEventType.Move // Move
             3 -> PointerEventType.Release  // Cancel
             else -> PointerEventType.Unknown
+        }
+
+        private fun Int.asMouseEventType(): PointerEventType = when (this) {
+            1 -> PointerEventType.Press // Press
+            2 -> PointerEventType.Release // Release
+            3 -> PointerEventType.Move // Move
+            13 -> PointerEventType.Release  // Cancel
+            else -> PointerEventType.Unknown
+        }
+
+        private fun Int.asAxisEventType(): PointerEventType = when (this) {
+            1 -> PointerEventType.Press // BEGIN
+            2 -> PointerEventType.Scroll // Move
+            3 -> PointerEventType.Release  // End
+            4 -> PointerEventType.Release // Cancel
+            else -> PointerEventType.Unknown
+        }
+
+        private fun Int.asPointerButton(): PointerButton = when (this) {
+            1 -> PointerButton.Primary
+            2 -> PointerButton.Secondary
+            4 -> PointerButton.Tertiary
+            8 -> PointerButton.Back
+            16 -> PointerButton.Forward
+            else -> PointerButton.Primary
         }
 
         private fun PointerEventType.isPressed(): Boolean =

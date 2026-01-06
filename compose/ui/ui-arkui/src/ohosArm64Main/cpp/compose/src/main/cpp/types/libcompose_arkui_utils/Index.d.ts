@@ -43,6 +43,12 @@ export declare interface InternalArkUIViewController extends ArkUIViewController
 
   dispatchTouchEvent(touchEvent: any /*TouchEvent*/, ignoreInteropView: boolean): boolean;
 
+  dispatchMouseEvent(mouseEvent: any /*MouseEvent*/): boolean;
+
+  dispatchAxisEvent(axisEvent: any /*AxisEvent*/): boolean;
+
+  dispatchKeyEvent(keyEvent: any /*KeyEvent*/): boolean;
+
   onKeyboardShow(keyboardHeight: number): void
 
   onKeyboardHide(): void

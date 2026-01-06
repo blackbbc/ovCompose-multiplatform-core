@@ -235,12 +235,28 @@ void ArkUIViewController_dispatchTouchEvent(ArkUIViewController *controller, voi
     androidx_compose_ui_arkui_ArkUIViewController_dispatchTouchEvent(controller, nativeTouchEvent, ignoreInteropView);
 }
 
-void ArkUIViewController_dispatchMouseEvent(ArkUIViewController *controller) {
+void ArkUIViewController_dispatchMouseEvent(ArkUIViewController *controller, void *nativeMouseEvent) {
     if (controller == nullptr) {
         LOGE("ArkUIViewController_dispatchMouseEvent: controller is null");
         return;
     }
-    androidx_compose_ui_arkui_ArkUIViewController_dispatchMouseEvent(controller);
+    androidx_compose_ui_arkui_ArkUIViewController_dispatchMouseEvent(controller, nativeMouseEvent);
+}
+    
+void ArkUIViewController_dispatchAxisEvent(ArkUIViewController *controller, void *nativeAxisEvent) {
+    if (controller == nullptr) {
+        LOGE("ArkUIViewController_dispatchAxisEvent: controller is null");
+        return;
+    }
+    androidx_compose_ui_arkui_ArkUIViewController_dispatchAxisEvent(controller, nativeAxisEvent);
+}
+    
+void ArkUIViewController_dispatchKeyEvent(ArkUIViewController *controller, void *nativeKeyEvent) {
+    if (controller == nullptr) {
+        LOGE("ArkUIViewController_dispatchKeyEvent: controller is null");
+        return;
+    }
+    androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyEvent(controller, nativeKeyEvent);
 }
 
 void ArkUIViewController_dispatchHoverEvent(ArkUIViewController *controller) {

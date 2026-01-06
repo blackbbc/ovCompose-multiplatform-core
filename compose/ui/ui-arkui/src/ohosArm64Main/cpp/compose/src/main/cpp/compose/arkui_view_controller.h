@@ -52,7 +52,9 @@ void ArkUIViewController_onFocusEvent(ArkUIViewController *controller);
 void ArkUIViewController_onKeyEvent(ArkUIViewController *controller);
 void ArkUIViewController_dispatchTouchEvent(ArkUIViewController *controller, void *nativeTouchEvent,
                                             bool ignoreInteropView);
-void ArkUIViewController_dispatchMouseEvent(ArkUIViewController *controller);
+void ArkUIViewController_dispatchMouseEvent(ArkUIViewController *controller, void *nativeMouseEvent);
+void ArkUIViewController_dispatchAxisEvent(ArkUIViewController *controller, void *nativeAxisEvent);
+void ArkUIViewController_dispatchKeyEvent(ArkUIViewController *controller, void *nativeKeyEvent);
 void ArkUIViewController_dispatchHoverEvent(ArkUIViewController *controller);
 void ArkUIViewController_keyboardWillShow(ArkUIViewController *controller, double keyboardHeight);
 void ArkUIViewController_keyboardWillHide(ArkUIViewController *controller);

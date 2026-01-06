@@ -132,6 +132,29 @@ internal class ComposeArkUIViewContainer(
         return true
     }
 
+    override fun dispatchMouseEvent(
+        nativeMouseEvent: napi_value
+    ): Boolean {
+        if (!nativeSurfaceHasBeenDestroyed) {
+            return mediator?.sendMouseEvent(requiredEnv, nativeMouseEvent) ?: false
+        }
+        return true
+    }
+
+    override fun dispatchAxisEvent(nativeAxisEvent: napi_value): Boolean {
+        if (!nativeSurfaceHasBeenDestroyed) {
+            return mediator?.sendAxisEvent(requiredEnv, nativeAxisEvent) ?: false
+        }
+        return true
+    }
+
+    override fun dispatchKeyEvent(nativeKeyEvent: napi_value): Boolean {
+        if (!nativeSurfaceHasBeenDestroyed) {
+            return mediator?.sendKeyEvent(requiredEnv, nativeKeyEvent) ?: false
+        }
+        return true
+    }
+
     override fun keyboardWillShow(keyboardHeight: Float) {
         mediator?.keyboardWillShow(keyboardHeight)
     }

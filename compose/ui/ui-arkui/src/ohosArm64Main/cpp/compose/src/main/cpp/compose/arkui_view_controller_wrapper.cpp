@@ -172,6 +172,54 @@ static napi_value DispatchTouchEvent(napi_env env, napi_callback_info info) {
     ArkUIViewController_dispatchTouchEvent(typedController, touchEvent, ignoreInteropView);
     return nullptr;
 }
+    
+static napi_value DispatchMouseEvent(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_value thisArg = nullptr;
+    napi_get_cb_info(env, info, &argc, args, &thisArg, nullptr);
+
+    napi_value mouseEvent = args[0];
+
+    void *controller = nullptr;
+    napi_unwrap(env, thisArg, &controller);
+
+    ArkUIViewController *typedController = reinterpret_cast<ArkUIViewController *>(controller);
+    ArkUIViewController_dispatchMouseEvent(typedController, mouseEvent);
+    return nullptr;
+}
+    
+static napi_value DispatchAxisEvent(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_value thisArg = nullptr;
+    napi_get_cb_info(env, info, &argc, args, &thisArg, nullptr);
+
+    napi_value axisEvent = args[0];
+
+    void *controller = nullptr;
+    napi_unwrap(env, thisArg, &controller);
+
+    ArkUIViewController *typedController = reinterpret_cast<ArkUIViewController *>(controller);
+    ArkUIViewController_dispatchAxisEvent(typedController, axisEvent);
+    return nullptr;
+}
+    
+static napi_value DispatchKeyEvent(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_value thisArg = nullptr;
+    napi_get_cb_info(env, info, &argc, args, &thisArg, nullptr);
+
+    napi_value keyEvent = args[0];
+
+    void *controller = nullptr;
+    napi_unwrap(env, thisArg, &controller);
+
+    ArkUIViewController *typedController = reinterpret_cast<ArkUIViewController *>(controller);
+    ArkUIViewController_dispatchKeyEvent(typedController, keyEvent);
+    return nullptr;
+}
 
 static napi_value KeyboardWillShow(napi_env env, napi_callback_info info) {
     size_t argc = 1;
@@ -292,6 +340,9 @@ napi_value Wrapped(napi_env env, void *nativeController) {
     bindFunction(env, result, "onPageHide", OnPageHide);
     bindFunction(env, result, "onBackPress", OnBackPress);
     bindFunction(env, result, "dispatchTouchEvent", DispatchTouchEvent);
+    bindFunction(env, result, "dispatchMouseEvent", DispatchMouseEvent);
+    bindFunction(env, result, "dispatchAxisEvent", DispatchAxisEvent);
+    bindFunction(env, result, "dispatchKeyEvent", DispatchKeyEvent);
     bindFunction(env, result, "onKeyboardShow", KeyboardWillShow);
     bindFunction(env, result, "onKeyboardHide", KeyboardWillHide);
     bindFunction(env, result, "requestSyncRefresh", RequestSyncRefresh);

@@ -122,17 +122,19 @@ static void OnFocusEventCB(OH_NativeXComponent *component, void *window) {
     auto controller = XComponentHolder::GetInstance()->GetArkUIViewController(component);
     ArkUIViewController_onFocusEvent(controller);
 }
-
+    
+// 从 ArkView 层分发
 static void OnKeyEventCB(OH_NativeXComponent *component, void *window) {
-    LOGI("XComponentRender: OnKeyEventCB");
-    auto controller = XComponentHolder::GetInstance()->GetArkUIViewController(component);
-    ArkUIViewController_onKeyEvent(controller);
+//    LOGI("XComponentRender: OnKeyEventCB");
+//    auto controller = XComponentHolder::GetInstance()->GetArkUIViewController(component);
+//    ArkUIViewController_onKeyEvent(controller);
 }
 
+// 从 ArkView 层分发
 static void DispatchMouseEventCB(OH_NativeXComponent *component, void *window) {
-    LOGI("XComponentRender: DispatchMouseEventCB");
-    auto controller = XComponentHolder::GetInstance()->GetArkUIViewController(component);
-    ArkUIViewController_dispatchMouseEvent(controller);
+//    LOGI("XComponentRender: DispatchMouseEventCB");
+//    auto controller = XComponentHolder::GetInstance()->GetArkUIViewController(component);
+//    ArkUIViewController_dispatchMouseEvent(controller);
 }
 static void DispatchHoverEventCB(OH_NativeXComponent *component, bool isHover) {
     LOGI("XComponentRender: DispatchHoverEventCB");
