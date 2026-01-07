@@ -41,6 +41,7 @@ import platform.ohos.napi_call_function
 import platform.ohos.napi_call_threadsafe_function
 import platform.ohos.napi_callback
 import platform.ohos.napi_callback_info
+import platform.ohos.napi_create_array_with_length
 import platform.ohos.napi_create_double
 import platform.ohos.napi_create_function
 import platform.ohos.napi_create_int32
@@ -182,6 +183,22 @@ object JsEnv {
             checkStatus(napi_create_object(env(), result.ptr))
             result.value
         }
+    }
+
+    fun createArray(size: Int): napi_value? {
+        return memScoped {
+            val result = alloc<napi_valueVar>()
+            checkStatus(napi_create_array_with_length(env(), size.toULong(), result.ptr))
+            result.value
+        }
+    }
+
+    fun createStringArray(vararg strings: String): napi_value? {
+        val array = createArray(strings.size) ?: return null
+        strings.forEachIndexed { index, str ->
+            setElement(array, index, createStringUtf8(str))
+        }
+        return array
     }
 
     fun getReferenceValue(ref: napi_ref?): napi_value? {

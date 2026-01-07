@@ -29,6 +29,8 @@ import androidx.compose.ui.arkui.InternalArkUIViewController
 import androidx.compose.ui.arkui.MouseEvent
 import androidx.compose.ui.arkui.TouchEvent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.asKey
 import androidx.compose.ui.input.pointer.HistoricalChange
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerButtons
@@ -57,6 +59,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.window.ComposeArkUIViewControllerConfiguration
 import kotlin.coroutines.CoroutineContext
+import org.jetbrains.skiko.SkikoInputModifiers
+import org.jetbrains.skiko.SkikoKey
+import org.jetbrains.skiko.SkikoKeyboardEvent
+import org.jetbrains.skiko.SkikoKeyboardEventKind
 import org.jetbrains.skiko.currentNanoTime
 import platform.ohos.napi_env
 import platform.ohos.napi_value
@@ -249,6 +255,15 @@ internal class ComposeSceneMediator(
 
     @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
     fun sendKeyEvent(env: napi_env, event: napi_value): Boolean {
+//        val keyValue = JsEnv.getValueInt32(JsEnv.getNamedProperty(event, "keyCode"), -1)
+//        println("sendKeyEvent, keyValue:$keyValue, key:${event.key}, type:${event.keyType}, modifiers:${event.modifiers}")
+        scene.sendKeyEvent(KeyEvent(SkikoKeyboardEvent(
+            key = event.key,
+            modifiers = event.modifiers,
+            kind = event.keyType,
+            timestamp = event.timestamp,
+            platform = event
+        )))
         return true
     }
 
@@ -346,6 +361,48 @@ internal class ComposeSceneMediator(
                 return JsEnv.getValueFloat(verticalAxisValue) ?: 0f
             }
 
+        private val napi_value.key: SkikoKey
+            get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "keyCode"), -1).asKey()
+
+        private val napi_value.keyType: SkikoKeyboardEventKind
+            get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "type"), -1).asKeyboardEventKind()
+
+        private val napi_value.modifiers: SkikoInputModifiers
+            get() {
+                val getModifierKeyStateFun = JsEnv.getNamedProperty(this, "getModifierKeyState")
+                var result = 0
+                if (getModifierKeyStateFun != null) {
+                    // Check Ctrl key
+                    val ctrlArray = JsEnv.createStringArray("Ctrl")
+                    var ret = JsEnv.callFunction(this, getModifierKeyStateFun, ctrlArray)
+                    val ctrlPressed = JsEnv.getValueBool(ret) ?: false
+                    if (ctrlPressed) {
+                        result = result.or(SkikoInputModifiers.CONTROL.value)
+                    }
+                    
+                    // Check Alt key
+                    val altArray = JsEnv.createStringArray("Alt")
+                    ret = JsEnv.callFunction(this, getModifierKeyStateFun, altArray)
+                    val altPressed = JsEnv.getValueBool(ret) ?: false
+                    if (altPressed) {
+                        result = result.or(SkikoInputModifiers.ALT.value)
+                    }
+                    
+                    // Check Shift key
+                    val shiftArray = JsEnv.createStringArray("Shift")
+                    ret = JsEnv.callFunction(this, getModifierKeyStateFun, shiftArray)
+                    val shiftPressed = JsEnv.getValueBool(ret) ?: false
+                    if (shiftPressed) {
+                        result = result.or(SkikoInputModifiers.SHIFT.value)
+                    }
+                }
+                val metaKeyPressed = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "metaKey"), 0)
+                if (metaKeyPressed == 1) {
+                    result = result.or(SkikoInputModifiers.META.value)
+                }
+                return SkikoInputModifiers(result)
+            }
+
         private fun Int.asPointerEventType(): PointerEventType = when (this) {
             0 -> PointerEventType.Press // TouchType.Down
             1 -> PointerEventType.Release // Up
@@ -377,6 +434,12 @@ internal class ComposeSceneMediator(
             8 -> PointerButton.Back
             16 -> PointerButton.Forward
             else -> PointerButton.Primary
+        }
+
+        private fun Int.asKeyboardEventKind(): SkikoKeyboardEventKind = when (this) {
+            0 -> SkikoKeyboardEventKind.DOWN // Down
+            1 -> SkikoKeyboardEventKind.UP // 1
+            else -> SkikoKeyboardEventKind.UNKNOWN
         }
 
         private fun PointerEventType.isPressed(): Boolean =

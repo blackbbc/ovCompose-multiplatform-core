@@ -17,6 +17,9 @@
 
 package androidx.compose.ui.input.key
 
+import androidx.compose.ui.napi.JsEnv
+import platform.ohos.napi_value
+
 /**
  * The UTF16 value corresponding to the key event that was pressed. The unicode character
  * takes into account any meta keys that are pressed (eg. Pressing shift results in capital
@@ -35,8 +38,13 @@ package androidx.compose.ui.input.key
  */
 
 // TODO("补API；后续可能参考import {KeyEvent} from '@ohos.multimodalInput.keyEvent')
+
+private val napi_value.unicode: Int
+    get() = JsEnv.getValueInt32(JsEnv.getNamedProperty(this, "unicode"), 0)
+
+@Suppress("UNCHECKED_CAST")
 actual val KeyEvent.utf16CodePoint: Int
-    get() = TODO("need to import {KeyEvent} from '@ohos.multimodalInput.keyEvent' and impl with KeyEvent.unicodeChar. From KeyEvent.utf16CodePoint")
+    get() = (nativeKeyEvent.platform as? napi_value)?.unicode ?: 0
 
 
 
