@@ -25,8 +25,8 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFold
+import kotlin.math.abs
 
 internal actual fun CompositionLocalConsumerModifierNode.platformScrollConfig(): ScrollConfig = OHOSScrollConfig
 
@@ -38,11 +38,43 @@ fun optOutOfCupertinoOverscroll() {
 internal object OHOSScrollConfig : ScrollConfig {
     var isRubberBandingOverscrollEnabled: Boolean = true
 
-    /*
-     * There are no scroll events produced on OHOS,
-     * so in reality this function should not be ever called.
-     * The implementation is copied from androidMain just for testing purposes.
+    /**
+     * OHOS scroll event handling.
+     * 
+     * In ComposeSceneMediator.ohos.kt, scrollDelta is set to event.scrollX/scrollY directly,
+     * where the values are in vp (viewport) units representing the intended scroll distance.
+     * 
+     * This function converts vp to pixels by multiplying with density:
+     * - scrollDelta (vp) * density = pixels
+     * 
+     * Unlike Android which uses abstract "tick" values, OHOS provides physical distance
+     * in vp units, so we don't apply the standard -64.dp multiplication.
      */
-    override fun Density.calculateMouseWheelScroll(event: PointerEvent, bounds: IntSize): Offset =
-        event.changes.fastFold(Offset.Zero) { acc, c -> acc + c.scrollDelta } * -64.dp.toPx()
+    override fun Density.calculateMouseWheelScroll(event: PointerEvent, bounds: IntSize): Offset {
+        // Convert vp to pixels: vp * density
+        return event.changes.fastFold(Offset.Zero) { acc, c -> 
+            acc + c.scrollDelta 
+        } * -this.density
+    }
+    
+    /**
+     * Detect if this is a precise wheel scroll event (touchpad).
+     * 
+     * OHOS touchpad vs mouse wheel characteristics:
+     * - Touchpad: scrollDelta range 0.5 ~ 30 vp (continuous, variable values)
+     * - Mouse wheel: scrollDelta = 45 vp (discrete, fixed value)
+     * 
+     * If detected as touchpad, MouseWheelScrollable will apply scrolling immediately
+     * for real-time response. Otherwise, it will use animation for smoother experience.
+     */
+    override fun isPreciseWheelScroll(event: PointerEvent): Boolean {
+        println("OHOSScrollConfig, scrollDelta:${event.changes.firstOrNull()?.scrollDelta}")
+        val scrollDelta = event.changes.firstOrNull()?.scrollDelta ?: return false
+        val maxDelta = maxOf(abs(scrollDelta.x), abs(scrollDelta.y))
+
+        // Touchpad values are typically < 40 vp, mouse wheel = 45 vp
+        return maxDelta > 0f && maxDelta < 40f
+    }
+
+    override val isSmoothScrollingEnabled: Boolean = false
 }

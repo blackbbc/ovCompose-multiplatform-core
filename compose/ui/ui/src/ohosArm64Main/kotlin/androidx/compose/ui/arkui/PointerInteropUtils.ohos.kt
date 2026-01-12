@@ -27,11 +27,11 @@ import platform.ohos.napi_value
 
 
 class TouchEvent(nativeEvent: napi_value?) : JsObject(nativeEvent) {
-    var type: Int
+    var type: Int?
         set(value) {
             this["type"] = value.nApiValue()
         }
-        get() = requireNotNull(get("type").asInt()) { "The type of TouchEvent(ohos) was null!" }
+        get() = get("type").asInt()
 
     var timestamp: Long
         set(value) {
@@ -49,9 +49,45 @@ class TouchEvent(nativeEvent: napi_value?) : JsObject(nativeEvent) {
     }
 }
 
-class MouseEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
+class MouseEvent(nativeEvent: napi_value?) : JsObject(nativeEvent) {
+    var action: Int
+        set(value) {
+            this["action"] = value.nApiValue()
+        }
+        get() = requireNotNull(get("action").asInt()) { "The type of MouseEvent(ohos) was null!" }
 
-class AxisEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
+    var timestamp: Long
+        set(value) {
+            this["timestamp"] = value.nApiValue()
+        }
+        get() = requireNotNull(get("timestamp").asLong()) { "The timestamp of TouchEvent(ohos) was null!" }
+
+    val nativeEvent: napi_value? get() = jsValue
+
+    companion object {
+        const val ACTION_CANCEL = 13
+    }
+}
+
+class AxisEvent(nativeEvent: napi_value?) : JsObject(nativeEvent) {
+    var action: Int
+        set(value) {
+            this["action"] = value.nApiValue()
+        }
+        get() = requireNotNull(get("action").asInt()) { "The type of AxisEvent(ohos) was null!" }
+
+    var timestamp: Long
+        set(value) {
+            this["timestamp"] = value.nApiValue()
+        }
+        get() = requireNotNull(get("timestamp").asLong()) { "The timestamp of TouchEvent(ohos) was null!" }
+
+    val nativeEvent: napi_value? get() = jsValue
+
+    companion object {
+        const val ACTION_CANCEL = 4
+    }
+}
 
 class KeyEvent(nativeEvent: napi_value?) : JsObject(nativeEvent)
 
@@ -81,25 +117,57 @@ private fun PointerEvent.toTouchEventScope(
     block: (TouchEvent) -> Unit,
     cancel: Boolean
 ) {
-    // TODO(nativeEvent): how to handle null nativeEvent.
-    val touchEvent = nativeEvent as? TouchEvent ?: return
-    requireNotNull(touchEvent) {
-        "The PointerEvent receiver cannot have a null TouchEvent."
+    val mouseEvent = nativeEvent as? MouseEvent
+    val axisEvent = nativeEvent as? AxisEvent
+    var touchEvent = nativeEvent as? TouchEvent
+
+    if (mouseEvent != null) {
+        touchEvent = TouchEvent(mouseEvent.nativeEvent)
+    } else if (axisEvent != null) {
+        touchEvent = TouchEvent(axisEvent.nativeEvent)
     }
 
+    if (touchEvent == null) return
+
     if (cancel) {
-        val oldType = touchEvent.type
-        val oldTimestamp = touchEvent.timestamp
+        if (mouseEvent != null) {
+            val oldAction = mouseEvent.action
+            val oldTimestamp = mouseEvent.timestamp
 
-        touchEvent.type = TouchEvent.ACTION_CANCEL
-        // The timestamp also need to be updated here to pass the validity check,
-        // such as `PostEventManager::CheckPointValidity` in ohos.
-        touchEvent.timestamp = currentNanoTime()
+            mouseEvent.action = MouseEvent.ACTION_CANCEL
+            mouseEvent.timestamp = currentNanoTime()
 
-        block(touchEvent)
+            touchEvent = TouchEvent(mouseEvent.nativeEvent)
+            block(touchEvent)
 
-        touchEvent.timestamp = oldTimestamp
-        touchEvent.type = oldType
+            mouseEvent.timestamp = oldTimestamp
+            mouseEvent.action = oldAction
+        } else if (axisEvent != null) {
+            val oldAction = axisEvent.action
+            val oldTimestamp = axisEvent.timestamp
+
+            axisEvent.action = AxisEvent.ACTION_CANCEL
+            axisEvent.timestamp = currentNanoTime()
+
+            touchEvent = TouchEvent(axisEvent.nativeEvent)
+            block(touchEvent)
+
+            axisEvent.timestamp = oldTimestamp
+            axisEvent.action = oldAction
+        } else {
+            val oldType = touchEvent.type
+            val oldTimestamp = touchEvent.timestamp
+
+            touchEvent.type = TouchEvent.ACTION_CANCEL
+            // The timestamp also need to be updated here to pass the validity check,
+            // such as `PostEventManager::CheckPointValidity` in ohos.
+            touchEvent.timestamp = currentNanoTime()
+
+            block(touchEvent)
+
+            touchEvent.timestamp = oldTimestamp
+            touchEvent.type = oldType
+        }
     } else {
         block(touchEvent)
     }

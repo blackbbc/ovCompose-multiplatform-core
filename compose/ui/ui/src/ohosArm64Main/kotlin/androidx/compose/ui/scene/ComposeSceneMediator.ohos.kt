@@ -228,20 +228,12 @@ internal class ComposeSceneMediator(
     fun sendAxisEvent(env: napi_env, event: napi_value): Boolean {
         OhosTrace.traceSync("sendAxisEvent") {
             val density = scene.density.density
-            var scrollX = event.scrollX
-            var scrollY = event.scrollY
-            if (scrollX > 0) {
-                scrollX = 1f
-            } else if (scrollX < 0) {
-                scrollX = -1f
-            }
-            if (scrollY > 0) {
-                scrollY = 1f
-            } else if (scrollY < 0) {
-                scrollY = -1f
-            }
-//            val scrollDelta = Offset(event.scrollX, event.scrollY)
-//            println("sendAxisEvent, type:${event.axisEventType}, x: ${scrollDelta.x}, y: ${scrollDelta.y}, density:${density}")
+
+            // OHOS event.scrollX/scrollY 是 vp 单位，表示系统期望的滚动距离
+            // 直接传入 vp 值，让 OhosScrollable 处理转换为像素
+            val scrollX = event.scrollX
+            val scrollY = event.scrollY
+
             scene.sendPointerEvent(
                 eventType = event.axisEventType,
                 timeMillis = event.timestamp,
@@ -420,9 +412,9 @@ internal class ComposeSceneMediator(
         }
 
         private fun Int.asAxisEventType(): PointerEventType = when (this) {
-            1 -> PointerEventType.Press // BEGIN
+            1 -> PointerEventType.Scroll // BEGIN
             2 -> PointerEventType.Scroll // Move
-            3 -> PointerEventType.Release  // End
+            3 -> PointerEventType.Scroll  // End
             4 -> PointerEventType.Release // Cancel
             else -> PointerEventType.Unknown
         }
