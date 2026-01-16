@@ -76,5 +76,5 @@ internal object OHOSScrollConfig : ScrollConfig {
         return maxDelta > 0f && maxDelta < 40f
     }
 
-    override val isSmoothScrollingEnabled: Boolean = false
+    override val isSmoothScrollingEnabled: Boolean = true
 }
