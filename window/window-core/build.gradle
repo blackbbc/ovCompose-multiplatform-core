@@ -14,36 +14,68 @@
  * limitations under the License.
  */
 
+/**
+ * This file was created using the `create_project.py` script located in the
+ * `<AndroidX root>/development/project-creator` directory.
+ *
+ * Please use that script when creating a new project, rather than copying an existing project and
+ * modifying its settings.
+ */
+
+
+import androidx.build.AndroidXComposePlugin
 import androidx.build.LibraryType
-import androidx.build.PlatformIdentifier
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     id("AndroidXPlugin")
     id("com.android.library")
+    id("AndroidXComposePlugin")
 }
 
-androidXMultiplatform {
-    jvm()
-    android()
+AndroidXComposePlugin.applyAndConfigureKotlinPlugin(project)
 
-    defaultPlatform(PlatformIdentifier.JVM)
+if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
+    androidXComposeMultiplatform {
+        android()
+//        desktop()
+        darwin()
+//        js()
+//        wasm()
+        ohos()
+    }
 
-    sourceSets {
-        commonMain {
-            dependencies {
-                api(libs.kotlinStdlib)
-                api("androidx.annotation:annotation:1.7.0")
+    kotlin {
+        sourceSets {
+            commonMain {
+                dependencies {
+                    api(libs.kotlinStdlib)
+                    api(project(":annotation:annotation"))
+                }
             }
-        }
 
-        commonTest {
-            dependencies {
-                implementation(libs.kotlinTest)
-                implementation(libs.kotlinTestAnnotationsCommon)
-                implementation(libs.kotlinCoroutinesCore)
-                // TODO remove when https://youtrack.jetbrains.com/issue/KT-62368/Kotlin-1.9.X-fails-to-detect-kotlin.test.Test-annotation-reference-on-commonTest-source-set-when-targeting-JVMAndroid
-                // is fixed
-                implementation(libs.kotlinTestJunit)
+//            commonTest {
+//                dependencies {
+//                    implementation(libs.kotlinTest)
+//                    implementation(libs.kotlinTestAnnotationsCommon)
+//                    implementation(libs.kotlinCoroutinesCore)
+//                    // TODO remove when https://youtrack.jetbrains.com/issue/KT-62368/Kotlin-1.9.X-fails-to-detect-kotlin.test.Test-annotation-reference-on-commonTest-source-set-when-targeting-JVMAndroid
+//                    // is fixed
+//                    implementation(libs.kotlinTestJunit)
+//                }
+//            }
+
+            jvmMain.dependsOn(commonMain)
+            androidMain.dependsOn(jvmMain)
+//            desktopMain.dependsOn(jvmMain)
+            nonJvmMain.dependsOn(commonMain)
+
+            targets.all { target ->
+                if (target.platformType !in [KotlinPlatformType.jvm, KotlinPlatformType.androidJvm, KotlinPlatformType.common]) {
+                    target.compilations["main"].defaultSourceSet {
+                        dependsOn(nonJvmMain)
+                    }
+                }
             }
         }
     }
@@ -58,5 +90,13 @@ androidx {
     type = LibraryType.PUBLISHED_LIBRARY
     inceptionYear = "2022"
     description = "WindowManager Core Library."
-    metalavaK2UastEnabled = true
+}
+
+androidxCompose {
+    composeCompilerPluginEnabled = false
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
