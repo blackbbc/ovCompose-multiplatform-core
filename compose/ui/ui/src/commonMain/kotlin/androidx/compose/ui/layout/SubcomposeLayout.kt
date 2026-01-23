@@ -875,6 +875,7 @@ internal class LayoutNodeSubcompositionsState(
             width: Int,
             height: Int,
             alignmentLines: Map<AlignmentLine, Int>,
+            rulers: (RulerScope.() -> Unit)?,
             placementBlock: Placeable.PlacementScope.() -> Unit
         ): MeasureResult {
             checkMeasuredSize(width, height)
@@ -885,6 +886,8 @@ internal class LayoutNodeSubcompositionsState(
                     get() = height
                 override val alignmentLines: Map<AlignmentLine, Int>
                     get() = alignmentLines
+                override val rulers: (RulerScope.() -> Unit)?
+                    get() = rulers
 
                 override fun placeChildren() {
                     if (isLookingAhead) {
