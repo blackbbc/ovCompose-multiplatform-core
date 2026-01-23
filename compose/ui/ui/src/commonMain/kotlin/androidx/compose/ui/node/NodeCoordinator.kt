@@ -62,6 +62,8 @@ internal abstract class NodeCoordinator(
     LayoutCoordinates,
     OwnerScope {
 
+    internal var forcePlaceWithLookaheadOffset: Boolean = false
+    internal var forceMeasureWithLookaheadConstraints: Boolean = false
     abstract val tail: Modifier.Node
 
     internal var wrapped: NodeCoordinator? = null
@@ -174,6 +176,7 @@ internal abstract class NodeCoordinator(
                 ) {
                     alignmentLinesOwner.alignmentLines.onAlignmentsChanged()
 
+                    @Suppress("PrimitiveInCollection")
                     val oldLines = oldAlignmentLines
                         ?: (mutableMapOf<AlignmentLine, Int>().also { oldAlignmentLines = it })
                     oldLines.clear()
@@ -314,7 +317,11 @@ internal abstract class NodeCoordinator(
         zIndex: Float,
         layerBlock: (GraphicsLayerScope.() -> Unit)?
     ) {
-        placeSelf(position, zIndex, layerBlock)
+        if (forcePlaceWithLookaheadOffset) {
+            placeSelf(lookaheadDelegate!!.position, zIndex, layerBlock)
+        } else {
+            placeSelf(position, zIndex, layerBlock)
+        }
     }
 
     private fun placeSelf(

@@ -24,13 +24,14 @@ import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.ApproachLayoutModifierNode
+import androidx.compose.ui.layout.ApproachMeasureScopeImpl
 import androidx.compose.ui.layout.HorizontalAlignmentLine
-import androidx.compose.ui.layout.IntermediateLayoutModifierNode
 import androidx.compose.ui.layout.LayoutModifier
+import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 
 @OptIn(ExperimentalComposeUiApi::class)
 internal class LayoutModifierNodeCoordinator(
@@ -38,33 +39,53 @@ internal class LayoutModifierNodeCoordinator(
     measureNode: LayoutModifierNode,
 ) : NodeCoordinator(layoutNode) {
     var layoutModifierNode: LayoutModifierNode = measureNode
-        internal set
+        internal set(value) {
+            if (value is ApproachLayoutModifierNode) {
+                approachMeasureScope = approachMeasureScope?.also {
+                    it.approachNode = value
+                } ?: ApproachMeasureScopeImpl(this, value)
+            } else {
+                approachMeasureScope = null
+            }
+            field = value
+        }
 
     override val tail: Modifier.Node
         get() = layoutModifierNode.node
 
     val wrappedNonNull: NodeCoordinator get() = wrapped!!
 
-    private var lookaheadConstraints: Constraints? = null
+    internal var lookaheadConstraints: Constraints? = null
 
     override var lookaheadDelegate: LookaheadDelegate? =
         if (layoutNode.lookaheadRoot != null) LookaheadDelegateForLayoutModifierNode() else null
+
+    /**
+     * Lazily initialized IntermediateMeasureScope. This is only initialized when the
+     * current modifier is an ApproachLayoutModifierNode.
+     */
+    internal var approachMeasureScope: ApproachMeasureScopeImpl? =
+        (measureNode as? ApproachLayoutModifierNode)?.let {
+            ApproachMeasureScopeImpl(this, it)
+        }
 
     /**
      * LookaheadDelegate impl for when the modifier is any [LayoutModifier] except
      * IntermediateLayoutModifier. This impl will invoke [LayoutModifier.measure] for
      * the lookahead measurement.
      */
-    private inner class LookaheadDelegateForLayoutModifierNode : LookaheadDelegate(this) {
+    private inner class LookaheadDelegateForLayoutModifierNode :
+        LookaheadDelegate(this@LayoutModifierNodeCoordinator) {
         // LookaheadMeasure
         override fun measure(constraints: Constraints): Placeable =
             performingMeasure(constraints) {
-                lookaheadConstraints = constraints
-                with(layoutModifierNode) {
+                this@LayoutModifierNodeCoordinator.lookaheadConstraints = constraints
+                with(this@LayoutModifierNodeCoordinator.layoutModifierNode) {
                     measure(
                         // This allows `measure` calls in the modifier to be redirected to
                         // calling lookaheadMeasure in wrapped.
-                        wrappedNonNull.lookaheadDelegate!!, constraints
+                        this@LayoutModifierNodeCoordinator.wrappedNonNull.lookaheadDelegate!!,
+                        constraints
                     )
                 }
             }
@@ -76,23 +97,35 @@ internal class LayoutModifierNodeCoordinator(
         }
 
         override fun minIntrinsicWidth(height: Int): Int =
-            with(layoutModifierNode) {
-                minIntrinsicWidth(wrappedNonNull.lookaheadDelegate!!, height)
+            with(this@LayoutModifierNodeCoordinator.layoutModifierNode) {
+                minIntrinsicWidth(
+                    this@LayoutModifierNodeCoordinator.wrappedNonNull.lookaheadDelegate!!,
+                    height
+                )
             }
 
         override fun maxIntrinsicWidth(height: Int): Int =
-            with(layoutModifierNode) {
-                maxIntrinsicWidth(wrappedNonNull.lookaheadDelegate!!, height)
+            with(this@LayoutModifierNodeCoordinator.layoutModifierNode) {
+                maxIntrinsicWidth(
+                    this@LayoutModifierNodeCoordinator.wrappedNonNull.lookaheadDelegate!!,
+                    height
+                )
             }
 
         override fun minIntrinsicHeight(width: Int): Int =
-            with(layoutModifierNode) {
-                minIntrinsicHeight(wrappedNonNull.lookaheadDelegate!!, width)
+            with(this@LayoutModifierNodeCoordinator.layoutModifierNode) {
+                minIntrinsicHeight(
+                    this@LayoutModifierNodeCoordinator.wrappedNonNull.lookaheadDelegate!!,
+                    width
+                )
             }
 
         override fun maxIntrinsicHeight(width: Int): Int =
-            with(layoutModifierNode) {
-                maxIntrinsicHeight(wrappedNonNull.lookaheadDelegate!!, width)
+            with(this@LayoutModifierNodeCoordinator.layoutModifierNode) {
+                maxIntrinsicHeight(
+                    this@LayoutModifierNodeCoordinator.wrappedNonNull.lookaheadDelegate!!,
+                    width
+                )
             }
     }
 
@@ -103,50 +136,85 @@ internal class LayoutModifierNodeCoordinator(
     }
 
     override fun measure(constraints: Constraints): Placeable {
-        performingMeasure(constraints) {
-            with(layoutModifierNode) {
-                measureResult = if (this is IntermediateLayoutModifierNode) {
-                    intermediateMeasure(
-                        wrappedNonNull,
-                        constraints,
-                        lookaheadDelegate!!.measureResult.let { IntSize(it.width, it.height) },
-                        lookaheadConstraints!!
-                    )
-                } else {
-                    measure(wrappedNonNull, constraints)
-                }
-                this@LayoutModifierNodeCoordinator
+        @Suppress("NAME_SHADOWING")
+        val constraints = if (forceMeasureWithLookaheadConstraints) {
+            requireNotNull(lookaheadConstraints) {
+                "Lookahead constraints cannot be null in approach pass."
             }
+        } else {
+            constraints
+        }
+        performingMeasure(constraints) {
+            measureResult = approachMeasureScope?.let { scope ->
+                // approachMeasureScope is created/updated when layoutModifierNode is set. An
+                // ApproachLayoutModifierNode will lead to a non-null approachMeasureScope.
+                with(scope.approachNode) {
+                    scope.approachMeasureRequired = isMeasurementApproachInProgress(
+                        scope.lookaheadSize
+                    ) || constraints != lookaheadConstraints
+                    if (!scope.approachMeasureRequired) {
+                        // In the future we'll skip the invocation of this measure block when
+                        // no approach is needed. For now, we'll ignore the constraints change
+                        // in the measure block when it's declared approach complete.
+                        wrappedNonNull.forceMeasureWithLookaheadConstraints = true
+                    }
+                    val result = scope.approachMeasure(wrappedNonNull, constraints)
+                    wrappedNonNull.forceMeasureWithLookaheadConstraints = false
+                    val reachedLookaheadSize = result.width == lookaheadDelegate!!.width &&
+                        result.height == lookaheadDelegate!!.height
+                    if (!scope.approachMeasureRequired &&
+                        wrappedNonNull.size == wrappedNonNull.lookaheadDelegate?.size &&
+                        !reachedLookaheadSize
+                    ) {
+                        object : MeasureResult by result {
+                            override val width = lookaheadDelegate!!.width
+                            override val height = lookaheadDelegate!!.height
+                        }
+                    } else {
+                        result
+                    }
+                }
+            } ?: with(layoutModifierNode) {
+                measure(wrappedNonNull, constraints)
+            }
+            this@LayoutModifierNodeCoordinator
         }
         onMeasured()
         return this
     }
 
-    override fun minIntrinsicWidth(height: Int): Int {
-        return (layoutModifierNode as? IntermediateLayoutModifierNode)?.run {
-            minIntermediateIntrinsicWidth(wrappedNonNull, height)
+    override fun minIntrinsicWidth(height: Int): Int =
+        approachMeasureScope?.run {
+            with(approachNode) {
+                minApproachIntrinsicWidth(this@LayoutModifierNodeCoordinator.wrappedNonNull, height)
+            }
         } ?: with(layoutModifierNode) {
             minIntrinsicWidth(wrappedNonNull, height)
         }
-    }
 
     override fun maxIntrinsicWidth(height: Int): Int =
-        (layoutModifierNode as? IntermediateLayoutModifierNode)?.run {
-            maxIntermediateIntrinsicWidth(wrappedNonNull, height)
+        approachMeasureScope?.run {
+            with(approachNode) {
+                maxApproachIntrinsicWidth(this@LayoutModifierNodeCoordinator.wrappedNonNull, height)
+            }
         } ?: with(layoutModifierNode) {
             maxIntrinsicWidth(wrappedNonNull, height)
         }
 
     override fun minIntrinsicHeight(width: Int): Int =
-        (layoutModifierNode as? IntermediateLayoutModifierNode)?.run {
-            minIntermediateIntrinsicHeight(wrappedNonNull, width)
+        approachMeasureScope?.run {
+            with(approachNode) {
+                minApproachIntrinsicHeight(this@LayoutModifierNodeCoordinator.wrappedNonNull, width)
+            }
         } ?: with(layoutModifierNode) {
             minIntrinsicHeight(wrappedNonNull, width)
         }
 
     override fun maxIntrinsicHeight(width: Int): Int =
-        (layoutModifierNode as? IntermediateLayoutModifierNode)?.run {
-            maxIntermediateIntrinsicHeight(wrappedNonNull, width)
+        approachMeasureScope?.run {
+            with(approachNode) {
+                maxApproachIntrinsicHeight(this@LayoutModifierNodeCoordinator.wrappedNonNull, width)
+            }
         } ?: with(layoutModifierNode) {
             maxIntrinsicHeight(wrappedNonNull, width)
         }
@@ -164,7 +232,20 @@ internal class LayoutModifierNodeCoordinator(
         // our position in order ot know how to offset the value we provided).
         if (isShallowPlacing) return
         onPlaced()
+        approachMeasureScope?.let {
+            with(it.approachNode) {
+                val approachComplete = with(placementScope) {
+                    !isPlacementApproachInProgress(
+                        lookaheadDelegate!!.lookaheadLayoutCoordinates
+                    ) && !it.approachMeasureRequired &&
+                        size == lookaheadDelegate?.size &&
+                        wrappedNonNull.size == wrappedNonNull.lookaheadDelegate?.size
+                }
+                wrappedNonNull.forcePlaceWithLookaheadOffset = approachComplete
+            }
+        }
         measureResult.placeChildren()
+        wrappedNonNull.forceMeasureWithLookaheadConstraints = false
     }
 
     override fun calculateAlignmentLine(alignmentLine: AlignmentLine): Int {
