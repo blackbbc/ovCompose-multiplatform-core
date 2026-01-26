@@ -18,7 +18,9 @@ public final class androidx/compose/material3/windowsizeclass/WindowHeightSizeCl
 }
 
 public final class androidx/compose/material3/windowsizeclass/WindowHeightSizeClass$Companion {
+	public final fun getAllSizeClasses ()Ljava/util/Set;
 	public final fun getCompact-Pt018CI ()I
+	public final fun getDefaultSizeClasses ()Ljava/util/Set;
 	public final fun getExpanded-Pt018CI ()I
 	public final fun getMedium-Pt018CI ()I
 }
@@ -35,7 +37,12 @@ public final class androidx/compose/material3/windowsizeclass/WindowSizeClass {
 }
 
 public final class androidx/compose/material3/windowsizeclass/WindowSizeClass$Companion {
-	public final fun calculateFromSize-EaSLcWc (J)Landroidx/compose/material3/windowsizeclass/WindowSizeClass;
+	public final fun calculateFromSize-qzXmJYc (JLjava/util/Set;Ljava/util/Set;)Landroidx/compose/material3/windowsizeclass/WindowSizeClass;
+	public static synthetic fun calculateFromSize-qzXmJYc$default (Landroidx/compose/material3/windowsizeclass/WindowSizeClass$Companion;JLjava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Landroidx/compose/material3/windowsizeclass/WindowSizeClass;
+}
+
+public final class androidx/compose/material3/windowsizeclass/WindowSizeClass_skikoKt {
+	public static final fun calculateWindowSizeClass (Landroidx/compose/runtime/Composer;I)Landroidx/compose/material3/windowsizeclass/WindowSizeClass;
 }
 
 public final class androidx/compose/material3/windowsizeclass/WindowWidthSizeClass : java/lang/Comparable {
@@ -55,7 +62,9 @@ public final class androidx/compose/material3/windowsizeclass/WindowWidthSizeCla
 }
 
 public final class androidx/compose/material3/windowsizeclass/WindowWidthSizeClass$Companion {
+	public final fun getAllSizeClasses ()Ljava/util/Set;
 	public final fun getCompact-Y0FxcvE ()I
+	public final fun getDefaultSizeClasses ()Ljava/util/Set;
 	public final fun getExpanded-Y0FxcvE ()I
 	public final fun getMedium-Y0FxcvE ()I
 }
