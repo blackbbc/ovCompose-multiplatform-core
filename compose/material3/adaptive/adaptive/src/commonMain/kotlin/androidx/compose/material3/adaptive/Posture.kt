@@ -16,6 +16,7 @@
 
 package androidx.compose.material3.adaptive
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Rect
 
 /**
@@ -36,6 +37,7 @@ import androidx.compose.ui.geometry.Rect
  *   other controls in the bottom half of the window.
  * @property hingeList a list of all hinges that are relevant to the posture.
  */
+@Immutable
 class Posture(val isTabletop: Boolean = false, val hingeList: List<HingeInfo> = emptyList()) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -93,6 +95,7 @@ val Posture.allHorizontalHingeBounds
  * @param isSeparating `true` if the hinge creates two logical display areas.
  * @param isOccluding `true` if the hinge conceals part of the display.
  */
+@Immutable
 class HingeInfo(
     val bounds: Rect,
     val isFlat: Boolean,
