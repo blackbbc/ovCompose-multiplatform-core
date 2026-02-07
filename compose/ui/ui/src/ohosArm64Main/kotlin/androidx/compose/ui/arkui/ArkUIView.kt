@@ -54,8 +54,8 @@ private inline fun Float.precisionNotEqual(rhs: Float): Boolean = abs(this - rhs
 class ArkUIView internal constructor(
     val name: String,
     var parameter: JsObject,
-    val onMeasured: ((width: Int, height: Int) -> Unit)? = null,
-    val composeParameterUpdater: ((JsObject) -> Unit)? = null
+    var onMeasured: ((width: Int, height: Int) -> Unit)? = null,
+    var composeParameterUpdater: ((JsObject) -> Unit)? = null
 ) {
     internal var onRequestDisallowInterceptTouchEvent: ((Boolean) -> Unit)? = null
 
@@ -208,6 +208,21 @@ class ArkUIView internal constructor(
     fun getCustomProperty(key: String): napi_value? =
         jsArkUIViewRef.call("getCustomProperty", key.nApiValue())
 
+    /**
+     * Reset layout state for view reuse. Calls ETS-side reset() which moves
+     * the view off-screen and resets clip bounds.
+     */
+    fun reset() {
+        translationX = UNDEFINED
+        translationY = UNDEFINED
+        positionX = UNDEFINED
+        positionY = UNDEFINED
+        sizeWidth = UNDEFINED
+        sizeHeight = UNDEFINED
+        visible = false
+        jsArkUIViewRef.call("reset")
+    }
+
     fun dispose() {
         if (isDebugLogEnabled) {
             kLog("ArkUIView dispose value=${jsOnMeasured?.jsValue?.rawValue}, id=${id}, hash=${hashCode()}")
@@ -223,6 +238,9 @@ class ArkUIView internal constructor(
         jsArkUIViewRef["onRequestDisallowInterceptTouchEvent"] = null
         jsOnRequestDisallowInterceptTouchEvent?.dispose()
         jsOnRequestDisallowInterceptTouchEvent = null
+
+        // Call ETS-side dispose() to clean up BuilderNode before deleting the NAPI reference.
+        jsArkUIViewRef.call("dispose")
 
         JsEnv.deleteReference(jsArkUIViewRef)
         jsArkUIViewRef = null
@@ -255,16 +273,32 @@ class ArkUIViewContainer {
     }
 }
 
+abstract class BaseArkUIRootView {
+
+    abstract fun createView(name: String, parameter: JsObject = js()): ArkUIView
+
+}
+
 /**
  * Bridge of an ArkUIView in ArkTs part which contains a RenderNode.
  */
-class ArkUIRootView(jsArkUIRootView: napi_value) : InteropContainer<ArkUIViewContainer> {
+class ArkUIRootView(jsArkUIRootView: napi_value) : BaseArkUIRootView(), InteropContainer<ArkUIViewContainer> {
 
     private var rootViewRef = JsEnv.createReference(jsArkUIRootView)
 
     override var rootModifier: TrackInteropModifierNode<ArkUIViewContainer>? = null
     override var interopViews = mutableSetOf<ArkUIViewContainer>()
         private set
+
+    /**
+     * Create a new [ArkUIView] and build its ETS-side counterpart.
+     * The returned view can be cached and reused with the factory-based ArkUIView composable.
+     */
+    override fun createView(name: String, parameter: JsObject): ArkUIView {
+        val view = ArkUIView(name, parameter)
+        buildView(view)
+        return view
+    }
 
     fun buildView(view: ArkUIView) {
         val rootView = JsEnv.getReferenceValue(rootViewRef)
@@ -289,6 +323,28 @@ class ArkUIRootView(jsArkUIRootView: napi_value) : InteropContainer<ArkUIViewCon
     override fun removeInteropView(nativeView: ArkUIViewContainer) {
         removeSubView(nativeView.arkUIView)
         interopViews.remove(nativeView)
+    }
+
+    /**
+     * Remove the view from the FrameNode tree without disposing NAPI references.
+     * Used by the factory-based ArkUIView composable where the user manages the view lifecycle.
+     */
+    fun detachInteropView(nativeView: ArkUIViewContainer) {
+        val view = nativeView.arkUIView
+        val rootView = JsEnv.getReferenceValue(rootViewRef)
+        val removeSubViewFunc = JsEnv.getProperty(rootView, "removeSubView".nApiValue())
+        val jsArkUIView = JsEnv.getReferenceValue(view.jsArkUIViewRef)
+        JsEnv.callFunction(rootView, removeSubViewFunc, jsArkUIView)
+        interopViews.remove(nativeView)
+    }
+
+    /**
+     * Re-insert a previously detached view back into the FrameNode tree.
+     */
+    fun reattachInteropView(nativeView: ArkUIViewContainer) {
+        val index = countInteropComponentsBefore(nativeView)
+        interopViews.add(nativeView)
+        insertSubView(nativeView.arkUIView, index)
     }
 
     private fun addSubView(view: ArkUIView) {

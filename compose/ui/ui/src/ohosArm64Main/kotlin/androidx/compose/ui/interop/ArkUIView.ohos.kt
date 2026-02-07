@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.arkui.ArkUIRootView
 import androidx.compose.ui.arkui.ArkUIView
 import androidx.compose.ui.arkui.ArkUIViewContainer
+import androidx.compose.ui.arkui.BaseArkUIRootView
 import androidx.compose.ui.arkui.pointerInteropFilter
 import androidx.compose.ui.arkui.pointerInteropPlaceholderFilter
 import androidx.compose.ui.arkui.trackUIKitInterop
@@ -496,6 +497,198 @@ fun ArkUIView(
     container = container,
 )
 
+/**
+ * A factory-based [ArkUIView] composable that allows the user to create and manage the
+ * native ETS view lifecycle, similar to Android's [AndroidView].
+ *
+ * The [factory] is called exactly once to create the [ArkUIView]. The user can cache
+ * and reuse the view across compositions (e.g., via a view pool).
+ *
+ * @param factory Called once to create the [ArkUIView]. Use [ArkUIRootView.createView] to
+ *   create a new view, or return a cached view from a pool.
+ * @param modifier The modifier to be applied to the layout.
+ * @param update A callback invoked on every recomposition to update the view.
+ * @param onRelease A callback invoked when the view exits the composition. The user decides
+ *   whether to dispose the view or return it to a pool for reuse.
+ * @param interactive If true, user touches will be passed to this ArkUIView.
+ * @param container The interop container layer to place the view in.
+ */
+@Composable
+fun ArkUIView(
+    modifier: Modifier,
+    factory: (BaseArkUIRootView) -> ArkUIView,
+    update: (ArkUIView) -> Unit = STUB_CALLBACK_WITH_RECEIVER,
+    onCreate: (ArkUIView) -> Unit = STUB_CALLBACK_WITH_RECEIVER,
+    onRelease: (ArkUIView) -> Unit = STUB_CALLBACK_WITH_RECEIVER,
+    interactive: Boolean = true,
+    container: InteropContainer = InteropContainer.BACK,
+) = InternalFactoryArkUIView(
+    factory = factory,
+    modifier = modifier,
+    update = update,
+    onCreate = onCreate,
+    onRelease = onRelease,
+    interactive = interactive,
+    container = container,
+)
+
+@Composable
+internal fun InternalFactoryArkUIView(
+    factory: (BaseArkUIRootView) -> ArkUIView,
+    modifier: Modifier,
+    update: (ArkUIView) -> Unit,
+    onCreate: (ArkUIView) -> Unit = STUB_CALLBACK_WITH_RECEIVER,
+    onRelease: (ArkUIView) -> Unit,
+    interactive: Boolean = true,
+    container: InteropContainer = InteropContainer.BACK,
+) {
+    val rootView = when (container) {
+        InteropContainer.BACK -> LocalBackInteropContainer.current
+        InteropContainer.FORE -> LocalForeInteropContainer.current
+        InteropContainer.TOUCHABLE -> LocalTouchableInteropContainer.current
+    }
+    val embeddedInteropComponent = remember {
+        FactoryEmbeddedInteropView(
+            rootView = rootView,
+            onRelease = onRelease
+        )
+    }
+    val density = LocalDensity.current.density
+    var componentSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
+    var componentClipBounds by remember { mutableStateOf(RECT_UNDEFINED) }
+
+    val interopContext = LocalArkUIInteropContext.current
+    var layoutKey by remember { mutableStateOf(0) }
+
+    Place(
+        key = layoutKey,
+        modifier = modifier.onGloballyPositioned { coordinates ->
+            val rootCoordinates = coordinates.findRootCoordinates()
+            val bounds = rootCoordinates.localBoundingBoxOf(coordinates, clipBounds = false)
+            val newOffset = bounds.topLeft
+            val newSize = coordinates.size
+            interopContext.deferAction {
+                embeddedInteropComponent.component.setTranslation(
+                    newOffset.x / density,
+                    newOffset.y / density
+                )
+            }
+            if (componentSize != newSize) {
+                interopContext.deferAction {
+                    embeddedInteropComponent.component.setSize(
+                        newSize.width / density,
+                        newSize.height / density
+                    )
+                }
+                componentSize = newSize
+            }
+
+            val clipBounds = rootCoordinates.localBoundingBoxOf(coordinates, clipBounds = true)
+            val clipBoundsBasedSelf =
+                clipBounds.translate(-bounds.left, -bounds.top).takeIf { !it.isEmpty } ?: Rect.Zero
+
+            if (bounds != clipBounds || componentClipBounds != RECT_UNDEFINED) {
+                if (componentClipBounds != clipBoundsBasedSelf) {
+                    componentClipBounds = clipBoundsBasedSelf
+                    interopContext.deferAction {
+                        embeddedInteropComponent.component.setVisible(!componentClipBounds.isEmpty)
+                        embeddedInteropComponent.component.setClipBounds(
+                            componentClipBounds.left,
+                            componentClipBounds.top,
+                            componentClipBounds.right,
+                            componentClipBounds.bottom
+                        )
+                    }
+                }
+            }
+        }.trackUIKitInterop(embeddedInteropComponent.container).let {
+            when (container) {
+                InteropContainer.BACK -> it.drawBehind {
+                    drawRect(Color.Transparent, blendMode = BlendMode.DstAtop)
+                }
+                InteropContainer.FORE, InteropContainer.TOUCHABLE -> it
+            }
+        }.let {
+            when (container) {
+                InteropContainer.FORE, InteropContainer.BACK ->
+                    if (interactive) {
+                        it.pointerInteropFilter(embeddedInteropComponent.container)
+                    } else {
+                        it
+                    }
+                InteropContainer.TOUCHABLE ->
+                    it.pointerInteropPlaceholderFilter(embeddedInteropComponent.container)
+            }
+        },
+        measurePolicy = { _, constraints ->
+            embeddedInteropComponent.component.measure(constraints, density)
+
+            val intrinsicMeasuredWidth =
+                embeddedInteropComponent.component.measuredWidth?.toInt()
+            val intrinsicMeasuredHeight =
+                embeddedInteropComponent.component.measuredHeight?.toInt()
+
+            val width = intrinsicMeasuredWidth?.coerceIn(constraints.minWidth, constraints.maxWidth)
+                ?: constraints.maxWidth
+            val height = intrinsicMeasuredHeight?.coerceIn(constraints.minHeight, constraints.maxHeight)
+                ?: constraints.maxHeight
+
+            val boundedMaxWidth =
+                if (constraints.hasBoundedWidth) constraints.maxWidth else MaxLayoutDimensionInList
+            val boundedMaxHeight =
+                if (constraints.hasBoundedHeight) constraints.maxHeight else MaxLayoutDimensionInList
+
+            val layoutWidth: Int = width.coerceAtMost(boundedMaxWidth)
+            val layoutHeight: Int = height.coerceAtMost(boundedMaxHeight)
+
+            componentSize = IntSize(layoutWidth, layoutHeight)
+
+            layout(layoutWidth, layoutHeight) {}
+        }
+    )
+
+    DisposableEffect(Unit) {
+        val view = factory(rootView)
+
+        // Reset Kotlin-side cached layout values (translationX/Y, sizeWidth/Height, visible, etc.)
+        // so that the next setTranslation/setSize calls will always go through to ETS.
+        // Without this, a reused view whose Kotlin cache matches the new position would
+        // skip the NAPI call, leaving the ETS-side translation at MAX_VALUE (off-screen).
+        view.reset()
+
+        // Set up framework callbacks via var properties — the already-bound JS
+        // callbacks in bindJs() will pick up these values through `this@ArkUIView`.
+        view.onMeasured = { width, height ->
+            if (width != componentSize.width || height != componentSize.height) {
+                layoutKey++
+            }
+        }
+
+        embeddedInteropComponent.component = view
+
+        onCreate(embeddedInteropComponent.component)
+
+        embeddedInteropComponent.updater = Updater(view, update) {
+            interopContext.deferAction(action = it)
+        }
+
+        interopContext.deferAction(ArkUIInteropViewHierarchyChange.VIEW_ADDED) {
+            embeddedInteropComponent.addToHierarchy()
+        }
+
+        onDispose {
+            view.onMeasured = null
+            interopContext.deferAction(ArkUIInteropViewHierarchyChange.VIEW_REMOVED) {
+                embeddedInteropComponent.removeFromHierarchy()
+            }
+        }
+    }
+
+    SideEffect {
+        embeddedInteropComponent.updater.update = update
+    }
+}
+
 @Composable
 private fun Place(key: Int, modifier: Modifier, measurePolicy: MeasurePolicy) {
     key(key) {
@@ -553,6 +746,25 @@ private class EmbeddedInteropView(
 
     override fun removeFromHierarchy() {
         removeViewFromHierarchy(component)
+    }
+}
+
+/**
+ * An [EmbeddedInteropComponent] that detaches the view from the hierarchy without disposing it.
+ * Used by the factory-based [ArkUIView] composable where the user manages the view lifecycle.
+ */
+private class FactoryEmbeddedInteropView(
+    rootView: ArkUIRootView,
+    onRelease: (ArkUIView) -> Unit
+) : EmbeddedInteropComponent(rootView, onRelease) {
+    override fun addToHierarchy() {
+        addViewToHierarchy(component)
+    }
+
+    override fun removeFromHierarchy() {
+        rootView.detachInteropView(container)
+        updater.dispose()
+        onRelease(component)
     }
 }
 
