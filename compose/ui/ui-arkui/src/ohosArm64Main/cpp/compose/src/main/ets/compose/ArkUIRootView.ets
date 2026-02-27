@@ -16,7 +16,9 @@
  */
 
 import { FrameNode, NodeController, RenderNode, UIContext } from '@kit.ArkUI'
+import { ArkUINode } from './ArkUINode'
 import { ArkUIView } from './ArkUIView'
+import { ArkWebViewNode } from './ArkWebViewNode'
 
 export class ArkUIRootView extends NodeController {
   frameNode!: FrameNode
@@ -38,15 +40,22 @@ export class ArkUIRootView extends NodeController {
     return arkUIView
   }
 
-  insertSubView(arkUIView: ArkUIView, index: number): ArkUIView | null {
-    // the arkui view position has not been specified, so translate it off screen to hide it.
-    arkUIView.setTranslation(Number.MAX_VALUE, Number.MAX_VALUE)
-    const previousSibling = this.frameNode.getChild(index - 1)
-    this.frameNode.insertChildAfter(arkUIView, previousSibling)
-    return arkUIView
+  buildWebView(): ArkWebViewNode | null {
+    if (!this.context) {
+      return null
+    }
+    return new ArkWebViewNode(this.context)
   }
 
-  removeSubView(view: ArkUIView) {
+  insertSubView(node: ArkUINode, index: number): ArkUINode | null {
+    // the node position has not been specified, so translate it off screen to hide it.
+    node.setTranslation(Number.MAX_VALUE, Number.MAX_VALUE)
+    const previousSibling = this.frameNode.getChild(index - 1)
+    this.frameNode.insertChildAfter(node, previousSibling)
+    return node
+  }
+
+  removeSubView(view: ArkUINode) {
     this.frameNode.removeChild(view)
   }
 }

@@ -532,6 +532,44 @@ fun ArkUIView(
     container = container,
 )
 
+/**
+ * Compose wrapper for HarmonyOS native WebView.
+ *
+ * Creates and manages an [ArkWebView] backed by an ETS ArkWebViewNode with
+ * a native WebviewController. Use [onCreated] to get the [ArkWebView] reference
+ * for imperative operations like [ArkWebView.loadUrl] and [ArkWebView.evaluateJavascript].
+ *
+ * @param modifier Layout modifier. Size should be specified.
+ * @param onCreated Called once when the WebView is created. Use for initial setup like loadUrl.
+ * @param onDispose Called when the WebView exits composition. Use to clean up or pool the view.
+ * @param interactive If true, touch events are forwarded to the WebView.
+ */
+@Composable
+fun ArkWebView(
+    modifier: Modifier,
+    onCreated: (androidx.compose.ui.arkui.ArkWebView) -> Unit = {},
+    onDispose: (androidx.compose.ui.arkui.ArkWebView) -> Unit = {},
+    interactive: Boolean = true,
+) {
+    var webView by remember { mutableStateOf<androidx.compose.ui.arkui.ArkWebView?>(null) }
+
+    ArkUIView(
+        modifier = modifier,
+        factory = { rootView ->
+            val wv = (rootView as ArkUIRootView).createWebView()
+            webView = wv
+            wv.view
+        },
+        onCreate = { _ ->
+            webView?.let { onCreated(it) }
+        },
+        onRelease = { _ ->
+            webView?.let { onDispose(it) }
+        },
+        interactive = interactive,
+    )
+}
+
 @Composable
 internal fun InternalFactoryArkUIView(
     factory: (BaseArkUIRootView) -> ArkUIView,

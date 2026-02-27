@@ -300,6 +300,22 @@ class ArkUIRootView(jsArkUIRootView: napi_value) : BaseArkUIRootView(), InteropC
         return view
     }
 
+    /**
+     * Create a new [ArkWebView] by calling ETS `buildWebView()`.
+     * The returned view's layout is managed by the internal [ArkUIView] bridge,
+     * which shares the same NAPI reference to the ETS ArkWebViewNode.
+     */
+    fun createWebView(): ArkWebView {
+        val view = ArkUIView("WebView", js())
+        val rootView = JsEnv.getReferenceValue(rootViewRef)
+        val buildFunc = JsEnv.getProperty(rootView, "buildWebView".nApiValue())
+        val jsWebView = JsEnv.callFunction(rootView, buildFunc)
+        OhosTrace.traceSync("bindJs") {
+            view.bindJs(jsWebView)
+        }
+        return ArkWebView(view)
+    }
+
     fun buildView(view: ArkUIView) {
         val rootView = JsEnv.getReferenceValue(rootViewRef)
         val addSubViewFunc = JsEnv.getProperty(rootView, "buildView".nApiValue())
