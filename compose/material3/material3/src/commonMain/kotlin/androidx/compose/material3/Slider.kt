@@ -1851,14 +1851,14 @@ class SliderState(
     internal var isRtl = false
     private var thumbWidth by mutableFloatStateOf(0f)
 
-    internal val coercedValueAsFraction
+    val coercedValueAsFraction
         get() = calcFraction(
             valueRange.start,
             valueRange.endInclusive,
             value.coerceIn(valueRange.start, valueRange.endInclusive)
         )
 
-    internal var isDragging by mutableStateOf(false)
+    var isDragging by mutableStateOf(false)
         private set
 
     internal fun updateDimensions(
