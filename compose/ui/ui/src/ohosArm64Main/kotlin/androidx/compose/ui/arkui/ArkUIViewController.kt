@@ -25,8 +25,10 @@ import androidx.compose.ui.annotation.InternalComposeApi
 import androidx.compose.ui.arkui.backhandler.OnBackPressedDispatcher
 import androidx.compose.ui.arkui.backhandler.OnBackPressedDispatcherOwner
 import androidx.compose.ui.arkui.backhandler.PlatformOnBackPressedDispatcher
+import androidx.compose.ui.arkui.colormode.ColorModeManager
 import androidx.compose.ui.arkui.density.DensityManager
 import androidx.compose.ui.arkui.extra.DefaultExtraStorage
+import androidx.compose.ui.arkui.locale.LocaleManager
 import androidx.compose.ui.arkui.extra.ExtraStorage
 import androidx.compose.ui.arkui.extra.ExtraStorageOwner
 import androidx.compose.ui.arkui.frame.FrameController
@@ -139,6 +141,8 @@ internal abstract class BasicArkUIViewController(
     private var syncRefreshId = 0
     private val syncRefreshList = ArrayList<Int>()
     private val densityManager by lazy { DensityManager(this) }
+    private val colorModeManager by lazy { ColorModeManager(this) }
+    private val localeManager by lazy { LocaleManager(this) }
 
     private var isPageShown = false
     private var lastWindowStageEvent: WindowStageEvent? = null
@@ -189,6 +193,18 @@ internal abstract class BasicArkUIViewController(
 
     override val density: Float
         get() = densityManager.getDensity()
+
+    val colorMode: Int
+        get() = colorModeManager.getColorMode()
+
+    val systemLanguage: String
+        get() = localeManager.getSystemLanguage()
+
+    val systemRegion: String
+        get() = localeManager.getSystemRegion()
+
+    internal fun getColorModeManager() = colorModeManager
+    internal fun getLocaleManager() = localeManager
 
     override fun invalidate() {
         invalid = true

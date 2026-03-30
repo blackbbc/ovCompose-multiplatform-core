@@ -1,6 +1,6 @@
 /*
- * Tencent is pleased to support the open source community by making ovCompose available.
- * Copyright (C) 2025 Tencent. All rights reserved.
+ * Tencent is pleased to support the open source community by making tvCompose available.
+ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,31 @@
 
 package androidx.compose.ui.text.intl
 
+/**
+ * 全局可变变量，由 ComposeArkUIViewContainer 在初始化和语言变化时更新。
+ * 格式示例："zh-Hans-CN"、"en-US"
+ */
+var ohosSystemLanguageTag: String = "zh-Hans-CN"
 
-internal class OHLocale : PlatformLocale {
+internal class OHLocale(private val tag: String = ohosSystemLanguageTag) : PlatformLocale {
     override val language: String
-        get() = "zh_CN"
+        get() = tag.split("-").first()
 
     override val script: String
         get() = ""
 
     override val region: String
-        get() = "zh-cn"
+        get() = tag.split("-").last().uppercase()
 
-    override fun toLanguageTag(): String = "zh_CN"
+    override fun toLanguageTag(): String = tag
 }
 
-// TODO("补API；临时写死)
 internal actual fun createPlatformLocaleDelegate(): PlatformLocaleDelegate =
     object : PlatformLocaleDelegate {
         override val current: LocaleList
             get() = LocaleList(listOf(Locale(OHLocale())))
 
-        override fun parseLanguageTag(languageTag: String): PlatformLocale = OHLocale()
+        override fun parseLanguageTag(languageTag: String): PlatformLocale = OHLocale(languageTag)
     }
 
-// TODO("补API；临时写死)
 internal actual fun PlatformLocale.isRtl(): Boolean = false

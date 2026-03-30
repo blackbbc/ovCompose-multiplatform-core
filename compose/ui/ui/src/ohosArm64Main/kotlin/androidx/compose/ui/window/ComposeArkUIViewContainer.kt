@@ -28,7 +28,9 @@ import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.LocalSystemTheme
 import androidx.compose.ui.SystemTheme
 import androidx.compose.ui.arkui.BasicArkUIViewController
+import androidx.compose.ui.arkui.colormode.ColorModeManager
 import androidx.compose.ui.extention.DelicateComposeApi
+import androidx.compose.ui.text.intl.ohosSystemLanguageTag
 import androidx.compose.ui.extention.GlobalContentScope
 import androidx.compose.ui.interop.ArkUIInteropContext
 import androidx.compose.ui.interop.LocalArkUIInteropContext
@@ -170,6 +172,24 @@ internal class ComposeArkUIViewContainer(
     }
 
     private fun createMediator(component: OHNativeXComponent): ComposeSceneMediator {
+        // 初始化 systemThemeState
+        systemThemeState.value = if (colorMode == ColorModeManager.COLOR_MODE_DARK)
+            SystemTheme.Dark else SystemTheme.Light
+
+        // 注册颜色模式变化回调
+        getColorModeManager().onColorModeChanged { mode ->
+            systemThemeState.value = if (mode == ColorModeManager.COLOR_MODE_DARK)
+                SystemTheme.Dark else SystemTheme.Light
+        }
+
+        // 初始化 locale
+        ohosSystemLanguageTag = "${systemLanguage}-${systemRegion}"
+
+        // 注册语言变化回调
+        getLocaleManager().onLocaleChanged { language, region ->
+            ohosSystemLanguageTag = "${language}-${region}"
+        }
+
         val mediator = ComposeSceneMediator(
             controller = this,
             configuration = configuration,
