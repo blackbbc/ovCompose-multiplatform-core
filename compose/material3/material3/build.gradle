@@ -130,6 +130,12 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
                 }
             }
 
+            ohosArm64Main {
+                dependencies {
+                    implementation(libs.datetime)
+                }
+            }
+
             desktopMain.dependsOn(skikoMain)
 
             jsNativeMain.dependsOn(skikoMain)

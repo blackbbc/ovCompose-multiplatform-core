@@ -19,34 +19,47 @@ package androidx.compose.material3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.text.intl.ohosSystemLanguageTag
 
 /**
- * Represents a Locale for the calendar. This locale will be used when formatting dates, determining
- * the input format, and more.
+ * Represents a Locale for the calendar on HarmonyOS.
  *
- * Note: For JVM based platforms, this would be equivalent to [java.util.Locale].
+ * @param language the language code (e.g. "zh", "en")
+ * @param region the region code (e.g. "CN", "US")
  */
 @ExperimentalMaterial3Api
-actual class CalendarLocale
+actual class CalendarLocale(
+    val language: String = "zh",
+    val region: String = "CN"
+) {
+    fun toLanguageTag(): String = if (region.isNotEmpty()) "$language-$region" else language
+
+    val isChineseLocale: Boolean
+        get() = language.startsWith("zh")
+
+    companion object {
+        fun fromLanguageTag(tag: String): CalendarLocale {
+            val parts = tag.split("-")
+            val language = parts.firstOrNull() ?: "zh"
+            val region = parts.lastOrNull()?.takeIf { it.length == 2 && it[0].isUpperCase() } ?: ""
+            return CalendarLocale(language, region)
+        }
+    }
+}
 
 /**
- * Returns the default [CalendarLocale].
- *
- * Note: For JVM based platforms, this would be equivalent to [java.util.Locale.getDefault].
+ * Returns the default [CalendarLocale] by reading the system language tag
+ * set by [ComposeArkUIViewContainer] via [LocaleManager].
  */
 @ReadOnlyComposable
 @Composable
 internal actual fun defaultLocale(): CalendarLocale {
-    TODO("Not yet implemented")
+    return CalendarLocale.fromLanguageTag(ohosSystemLanguageTag)
 }
 
 /**
  * Returns a string representation of an integer for the current Locale.
- *
- * @param minDigits sets the minimum number of digits allowed in the integer portion of a number.
- * If the minDigits value is greater than the [maxDigits] value, then [maxDigits] will also be set
- * to this value.
  */
 internal actual fun Int.toLocalString(minDigits: Int): String {
-    TODO("Not yet implemented")
+    return toString().padStart(minDigits, '0')
 }

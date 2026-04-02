@@ -1,6 +1,5 @@
 /*
- * Tencent is pleased to support the open source community by making ovCompose available.
- * Copyright (C) 2025 Tencent. All rights reserved.
+ * Copyright 2025 Tencent. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,22 +23,19 @@ package androidx.compose.material3
  */
 @ExperimentalMaterial3Api
 internal actual fun createCalendarModel(locale: CalendarLocale): CalendarModel {
-    TODO("Not yet implemented")
+    return OhosCalendarModelImpl(locale)
 }
 
 /**
  * Formats a UTC timestamp into a string with a given date format skeleton.
  *
- * A skeleton is similar to, and uses the same format characters as described in
- * [Unicode Technical Standard #35](https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table)
- *
- * One difference is that order is irrelevant. For example, "MMMMd" will return "MMMM d" in the
- * en_US locale, but "d. MMMM" in the de_CH locale.
+ * Maps common ICU skeletons to locale-appropriate patterns, then delegates
+ * to [OhosCalendarModelImpl.formatWithPattern] for the actual formatting.
  *
  * @param utcTimeMillis a UTC timestamp to format (milliseconds from epoch)
  * @param skeleton a date format skeleton
  * @param locale the [CalendarLocale] to use when formatting the given timestamp
- * @param cache a [MutableMap] for caching formatter related results for better performance
+ * @param cache a [MutableMap] for caching (unused in this implementation)
  */
 @ExperimentalMaterial3Api
 actual fun formatWithSkeleton(
@@ -48,5 +44,24 @@ actual fun formatWithSkeleton(
     locale: CalendarLocale,
     cache: MutableMap<String, Any>
 ): String {
-    TODO("Not yet implemented")
+    val pattern = skeletonToPattern(skeleton, locale)
+    return OhosCalendarModelImpl(locale).formatWithPattern(utcTimeMillis, pattern, locale)
+}
+
+@ExperimentalMaterial3Api
+private fun skeletonToPattern(skeleton: String, locale: CalendarLocale): String {
+    if (locale.isChineseLocale) {
+        return when (skeleton) {
+            DatePickerDefaults.YearMonthSkeleton -> "yyyy\u5E74M\u6708" // yyyy年M月
+            DatePickerDefaults.YearAbbrMonthDaySkeleton -> "yyyy\u5E74M\u6708d\u65E5" // yyyy年M月d日
+            DatePickerDefaults.YearMonthWeekdayDaySkeleton -> "yyyy\u5E74M\u6708d\u65E5EEEE" // yyyy年M月d日EEEE
+            else -> skeleton
+        }
+    }
+    return when (skeleton) {
+        DatePickerDefaults.YearMonthSkeleton -> "MMMM yyyy"
+        DatePickerDefaults.YearAbbrMonthDaySkeleton -> "MMM d, yyyy"
+        DatePickerDefaults.YearMonthWeekdayDaySkeleton -> "EEEE, MMMM d, yyyy"
+        else -> skeleton
+    }
 }

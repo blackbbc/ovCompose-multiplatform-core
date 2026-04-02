@@ -23,10 +23,6 @@ import androidx.compose.ui.text.style.LineHeightStyle
 /**
  * Returns Default [PlatformTextStyle].
  */
-internal actual fun defaultPlatformTextStyle(): PlatformTextStyle? {
-    TODO("Not yet implemented")
-}
+internal actual fun defaultPlatformTextStyle(): PlatformTextStyle? = null
 
-internal actual fun defaultLineHeightStyleTrim(): LineHeightStyle.Trim {
-    TODO("Not yet implemented")
-}
+internal actual fun defaultLineHeightStyleTrim(): LineHeightStyle.Trim = LineHeightStyle.Trim.None
