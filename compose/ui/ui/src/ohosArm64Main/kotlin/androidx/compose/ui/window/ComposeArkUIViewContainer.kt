@@ -45,9 +45,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInterfaceOrientation
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalNapiEnv
+import androidx.compose.ui.platform.LocalLayoutMargins
 import androidx.compose.ui.platform.LocalPlatformInsetsHolder
+import androidx.compose.ui.platform.LocalSafeArea
 import androidx.compose.ui.platform.LocalUIContext
 import androidx.compose.ui.platform.MainDispatcherFactory
+import androidx.compose.ui.platform.PlatformInsets
 import androidx.compose.ui.platform.PlatformContext
 import androidx.compose.ui.platform.PlatformInsetsHolder
 import androidx.compose.ui.platform.PlatformWindowContext
@@ -58,6 +61,7 @@ import androidx.compose.ui.scene.ComposeSceneLayer
 import androidx.compose.ui.scene.ComposeSceneMediator
 import androidx.compose.ui.scene.MultiLayerComposeScene
 import androidx.compose.ui.scene.SingleLayerComposeScene
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -258,6 +262,15 @@ internal fun ProvideContainerCompositionLocals(
     composeContainer: ComposeArkUIViewContainer,
     content: @Composable () -> Unit,
 ) = with(composeContainer) {
+    val density = LocalDensity.current
+    val safeArea = with(density) {
+        PlatformInsets(
+            left = maxOf(insetsHolder.statusBars.left, insetsHolder.displayCutout.left).toDp(),
+            top = maxOf(insetsHolder.statusBars.top, insetsHolder.displayCutout.top).toDp(),
+            right = maxOf(insetsHolder.statusBars.right, insetsHolder.displayCutout.right).toDp(),
+            bottom = maxOf(insetsHolder.navigationBars.bottom, insetsHolder.displayCutout.bottom).toDp(),
+        )
+    }
     CompositionLocalProvider(
         LocalArkUIViewController provides this,
         LocalLifecycleOwner provides this,
@@ -271,6 +284,8 @@ internal fun ProvideContainerCompositionLocals(
         LocalArkUIInteropContext provides interopContext,
         LocalSystemTheme provides systemThemeState.value,
         LocalPlatformInsetsHolder provides insetsHolder,
+        LocalSafeArea provides safeArea,
+        LocalLayoutMargins provides safeArea,
         content = { GlobalContentScope.content(content) }
     )
 }
