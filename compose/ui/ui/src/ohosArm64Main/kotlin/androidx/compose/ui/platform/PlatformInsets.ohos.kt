@@ -77,7 +77,8 @@ class PlatformInsetsHolder internal constructor(owner: ArkUIViewController) {
 
     var displayCutout by mutableStateOf(initInsetsValue(owner.context, TYPE_CUTOUT))
     var ime by mutableStateOf(initInsetsValue(owner.context, TYPE_KEYBOARD))
-    var navigationBars by mutableStateOf(initInsetsValue(owner.context,TYPE_NAVIGATION_INDICATOR))
+    private var rawNavigationBars by mutableStateOf(initInsetsValue(owner.context, TYPE_NAVIGATION_INDICATOR))
+    var navigationBars by mutableStateOf(rawNavigationBars)
     var statusBars by mutableStateOf(initInsetsValue(owner.context, TYPE_SYSTEM))
     var systemGestures by mutableStateOf(initInsetsValue(owner.context, TYPE_SYSTEM_GESTURE))
 
@@ -121,8 +122,22 @@ class PlatformInsetsHolder internal constructor(owner: ArkUIViewController) {
                 TYPE_SYSTEM -> statusBars = insets
                 TYPE_CUTOUT -> displayCutout = insets
                 TYPE_SYSTEM_GESTURE -> systemGestures = insets
-                TYPE_KEYBOARD -> ime = insets
-                TYPE_NAVIGATION_INDICATOR -> navigationBars = insets
+                TYPE_KEYBOARD -> {
+                    ime = insets
+                    // When keyboard is visible and covers the navigation bar,
+                    // set navigationBars.bottom to 0 to match Android behavior.
+                    navigationBars = if (insets.bottom > 0) {
+                        PlatformInsetsValues(rawNavigationBars.left, rawNavigationBars.top, rawNavigationBars.right, 0)
+                    } else {
+                        rawNavigationBars
+                    }
+                }
+                TYPE_NAVIGATION_INDICATOR -> {
+                    rawNavigationBars = insets
+                    if (ime.bottom == 0) {
+                        navigationBars = insets
+                    }
+                }
             }
         }
 
