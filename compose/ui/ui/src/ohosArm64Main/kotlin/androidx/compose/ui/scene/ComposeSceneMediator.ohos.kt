@@ -247,15 +247,16 @@ internal class ComposeSceneMediator(
 
     @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
     fun sendKeyEvent(env: napi_env, event: napi_value): Boolean {
-//        val keyValue = JsEnv.getValueInt32(JsEnv.getNamedProperty(event, "keyCode"), -1)
-//        println("sendKeyEvent, keyValue:$keyValue, key:${event.key}, type:${event.keyType}, modifiers:${event.modifiers}")
-        scene.sendKeyEvent(KeyEvent(SkikoKeyboardEvent(
+        val keyEvent = KeyEvent(SkikoKeyboardEvent(
             key = event.key,
             modifiers = event.modifiers,
             kind = event.keyType,
             timestamp = event.timestamp,
             platform = event
-        )))
+        ))
+        // Pre-focus interception: bypass the Compose focus tree if interceptor consumes the event.
+        if (configuration.keyEventInterceptor?.invoke(keyEvent) == true) return true
+        scene.sendKeyEvent(keyEvent)
         return true
     }
 

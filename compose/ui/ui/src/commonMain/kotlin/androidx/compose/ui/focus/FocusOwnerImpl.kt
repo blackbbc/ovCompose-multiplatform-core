@@ -209,10 +209,7 @@ internal class FocusOwnerImpl(
     override fun dispatchKeyEvent(keyEvent: KeyEvent): Boolean {
         if (!validateKeyEvent(keyEvent)) return false
 
-        val activeFocusTarget = rootFocusNode.findActiveFocusNode()
-        checkNotNull(activeFocusTarget) {
-            "Event can't be processed because we do not have an active focus target."
-        }
+        val activeFocusTarget = rootFocusNode.findActiveFocusNode() ?: return false
         val focusedKeyInputNode = activeFocusTarget.lastLocalKeyInputNode()
             ?: activeFocusTarget.nearestAncestor(Nodes.KeyInput)?.node
 

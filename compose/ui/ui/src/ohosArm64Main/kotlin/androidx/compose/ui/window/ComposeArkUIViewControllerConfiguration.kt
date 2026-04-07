@@ -18,6 +18,7 @@
 package androidx.compose.ui.window
 
 import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.scene.MultiLayerComposeScene
 import androidx.compose.ui.scene.SingleLayerComposeScene
 
@@ -49,4 +50,12 @@ class ComposeArkUIViewControllerConfiguration {
      */
     @ExperimentalComposeApi
     var internalStopGCSuppressor: () -> Unit = {}
+
+    /**
+     * Pre-focus key event interceptor. Called before key events enter the Compose focus tree.
+     * If the interceptor returns true, the event is consumed and will NOT be dispatched
+     * through the focus tree. This provides an Activity-level key event handling equivalent
+     * for HarmonyOS, similar to Android's Activity.dispatchKeyEvent().
+     */
+    var keyEventInterceptor: ((KeyEvent) -> Boolean)? = null
 }
