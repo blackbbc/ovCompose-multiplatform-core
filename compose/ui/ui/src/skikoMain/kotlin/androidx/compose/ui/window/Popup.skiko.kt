@@ -594,23 +594,39 @@ private fun rememberPopupMeasurePolicy(
         platformInsets = platformInsets,
         usePlatformDefaultWidth = properties.usePlatformDefaultWidth
     ) { contentSize ->
-        val positionWithInsets = positionWithInsets(platformInsets, containerSize) { sizeWithoutInsets ->
-            // Position provider works in coordinates without insets.
-            val boundsWithoutInsets = parentBoundsInWindow.translate(
-                -platformInsets.left.roundToPx(),
-                -platformInsets.top.roundToPx()
+        // Calculate visible area size (excluding system bars), same as Android's
+        // getWindowVisibleDisplayFrame().size.
+        val horizontal = platformInsets.left.roundToPx() + platformInsets.right.roundToPx()
+        val vertical = platformInsets.top.roundToPx() + platformInsets.bottom.roundToPx()
+        val sizeWithoutInsets = IntSize(
+            width = containerSize.width - horizontal,
+            height = containerSize.height - vertical
+        )
+        // Pass raw window coordinates for anchorBounds (not inset-adjusted),
+        // aligning with Android Popup behavior where anchorBounds come from
+        // positionInWindow() and windowSize from getWindowVisibleDisplayFrame().
+        val positionInWindow = popupPositionProvider.calculatePosition(
+            parentBoundsInWindow, sizeWithoutInsets, layoutDirection, contentSize
+        )
+        val finalPosition = if (properties.clippingEnabled) {
+            // Clip to safe area in window coordinates
+            val insetsLeft = platformInsets.left.roundToPx()
+            val insetsTop = platformInsets.top.roundToPx()
+            val maxX = containerSize.width - platformInsets.right.roundToPx() - contentSize.width
+            val maxY = containerSize.height - platformInsets.bottom.roundToPx() - contentSize.height
+            IntOffset(
+                x = if (contentSize.width < sizeWithoutInsets.width) {
+                    positionInWindow.x.coerceIn(insetsLeft, maxOf(insetsLeft, maxX))
+                } else insetsLeft,
+                y = if (contentSize.height < sizeWithoutInsets.height) {
+                    positionInWindow.y.coerceIn(insetsTop, maxOf(insetsTop, maxY))
+                } else insetsTop
             )
-            val positionInWindow = popupPositionProvider.calculatePosition(
-                boundsWithoutInsets, sizeWithoutInsets, layoutDirection, contentSize
-            )
-            if (properties.clippingEnabled) {
-                clipPosition(positionInWindow, contentSize, sizeWithoutInsets)
-            } else {
-                positionInWindow
-            }
+        } else {
+            positionInWindow
         }
-        layer.boundsInWindow = IntRect(positionWithInsets, contentSize)
-        layer.calculateLocalPosition(positionWithInsets)
+        layer.boundsInWindow = IntRect(finalPosition, contentSize)
+        layer.calculateLocalPosition(finalPosition)
     }
 }
 
