@@ -440,6 +440,10 @@ internal class TextInputService : PlatformTextInputService {
             if (DEBUG) {
                 log(TAG, "$DEBUG_CLASS.performEditorAction($editorAction)")
             }
+            if (editorAction == EnterKeyType.NEW_LINE.value) {
+                insertText("\n")
+                return true
+            }
             val imeAction = when (editorAction) {
                 EnterKeyType.UNSPECIFIED.value -> ImeAction.Default
                 EnterKeyType.DONE.value -> ImeAction.Done

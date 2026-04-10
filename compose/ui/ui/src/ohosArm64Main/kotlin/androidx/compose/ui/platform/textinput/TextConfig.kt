@@ -47,7 +47,8 @@ internal enum class EnterKeyType(val value: Int) {
     SEND(4),   // 发送。
     NEXT(5),   // 下一步。
     DONE(6),   // 完成。
-    PREVIOUS(7),   // 上一步。。
+    PREVIOUS(7),   // 上一步。
+    NEW_LINE(8),   // 换行。
 }
 
 internal class OhosTextConfig(private val imeOptions: ImeOptions) {
@@ -70,7 +71,7 @@ internal class OhosTextConfig(private val imeOptions: ImeOptions) {
         }
 
         this.enterKeyType = when (imeOptions.imeAction) {
-            ImeAction.Default -> EnterKeyType.UNSPECIFIED
+            ImeAction.Default -> if (imeOptions.singleLine) EnterKeyType.DONE else EnterKeyType.NEW_LINE
             ImeAction.Go -> EnterKeyType.GO
             ImeAction.Search -> EnterKeyType.SEARCH
             ImeAction.Send -> EnterKeyType.SEND
