@@ -30,6 +30,9 @@ internal object InputMethodManager {
     private const val EVENT_INSERT_TEXT = "insertText"
     private const val EVENT_DELETE_LEFT = "deleteLeft"
     private const val EVENT_SEND_FUNCTION_KEY = "sendFunctionKey"
+    private const val EVENT_MOVE_CURSOR = "moveCursor"
+    private const val EVENT_HANDLE_EXTEND_ACTION = "handleExtendAction"
+    private const val EVENT_SELECT_BY_MOVEMENT = "selectByMovement"
 
     private var isListened = false
     private var inputConnection: InputConnection? = null
@@ -53,6 +56,9 @@ internal object InputMethodManager {
     private var onInsertTextCallback: JsFunction<InputMethodManager, Unit?>? = null
     private var onDeleteLeftCallback: JsFunction<InputMethodManager, Unit?>? = null
     private var onSendFunctionKeyCallback: JsFunction<InputMethodManager, Boolean?>? = null
+    private var onMoveCursorCallback: JsFunction<InputMethodManager, Unit?>? = null
+    private var onHandleExtendActionCallback: JsFunction<InputMethodManager, Unit?>? = null
+    private var onSelectByMovementCallback: JsFunction<InputMethodManager, Unit?>? = null
 
     fun showSoftKeyboard(textConfig: OhosTextConfig?, inputConnection: InputConnection) {
         log(TAG, "showSoftKeyboard")
@@ -140,6 +146,35 @@ internal object InputMethodManager {
         }.apply {
             bindListener(controller, EVENT_SEND_FUNCTION_KEY, jsValue)
         }
+
+        // controller.on('moveCursor', callback)
+        // Direction: CURSOR_UP=1, CURSOR_DOWN=2, CURSOR_LEFT=3, CURSOR_RIGHT=4
+        onMoveCursorCallback = jsFunction(this) { direction: Int? ->
+            log(TAG, "moveCursor, direction: $direction")
+            direction?.let { inputConnection?.moveCursor(it) }
+        }.apply {
+            bindListener(controller, EVENT_MOVE_CURSOR, jsValue)
+        }
+
+        // controller.on('handleExtendAction', callback)
+        // ExtendAction: SELECT_ALL=0, CUT=3, COPY=4, PASTE=5
+        onHandleExtendActionCallback = jsFunction(this) { action: Int? ->
+            log(TAG, "handleExtendAction, action: $action")
+            action?.let { inputConnection?.handleExtendAction(it) }
+        }.apply {
+            bindListener(controller, EVENT_HANDLE_EXTEND_ACTION, jsValue)
+        }
+
+        // controller.on('selectByMovement', callback)
+        // Movement: { direction: Direction }
+        onSelectByMovementCallback = jsFunction(this) { movement: JsObject? ->
+            val direction = JsEnv.getValueInt32(movement?.get("direction"))
+                ?: return@jsFunction null
+            log(TAG, "selectByMovement, direction: $direction")
+            inputConnection?.selectByMovement(direction)
+        }.apply {
+            bindListener(controller, EVENT_SELECT_BY_MOVEMENT, jsValue)
+        }
     }
 
     private fun unregisterListeners() {
@@ -163,6 +198,21 @@ internal object InputMethodManager {
             unbindListener(controller, EVENT_SEND_FUNCTION_KEY, jsValue)
             dispose()
             onSendFunctionKeyCallback = null
+        }
+        onMoveCursorCallback?.apply {
+            unbindListener(controller, EVENT_MOVE_CURSOR, jsValue)
+            dispose()
+            onMoveCursorCallback = null
+        }
+        onHandleExtendActionCallback?.apply {
+            unbindListener(controller, EVENT_HANDLE_EXTEND_ACTION, jsValue)
+            dispose()
+            onHandleExtendActionCallback = null
+        }
+        onSelectByMovementCallback?.apply {
+            unbindListener(controller, EVENT_SELECT_BY_MOVEMENT, jsValue)
+            dispose()
+            onSelectByMovementCallback = null
         }
     }
 }

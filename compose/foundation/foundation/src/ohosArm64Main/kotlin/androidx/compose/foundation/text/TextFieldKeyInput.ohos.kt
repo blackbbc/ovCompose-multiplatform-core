@@ -18,7 +18,13 @@
 package androidx.compose.foundation.text
 
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.utf16CodePoint
+import org.jetbrains.skiko.SkikoKeyboardEventKind
 
-// TODO("补API；临时写死)
-actual val KeyEvent.isTypedEvent: Boolean
-    get() = false
+internal actual val KeyEvent.isTypedEvent: Boolean
+    get() = nativeKeyEvent.kind == SkikoKeyboardEventKind.DOWN
+        && utf16CodePoint != 0
+        && !isCtrlPressed
+        && !isMetaPressed

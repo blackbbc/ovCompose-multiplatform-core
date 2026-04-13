@@ -24,4 +24,13 @@ internal interface InputConnection {
     fun deleteBackward()
 
     fun performEditorAction(editorAction: Int): Boolean
+
+    /** Direction: CURSOR_UP=1, CURSOR_DOWN=2, CURSOR_LEFT=3, CURSOR_RIGHT=4 */
+    fun moveCursor(direction: Int)
+
+    /** ExtendAction: SELECT_ALL=0, CUT=3, COPY=4, PASTE=5 */
+    fun handleExtendAction(action: Int)
+
+    /** Select text by cursor movement direction */
+    fun selectByMovement(direction: Int)
 }

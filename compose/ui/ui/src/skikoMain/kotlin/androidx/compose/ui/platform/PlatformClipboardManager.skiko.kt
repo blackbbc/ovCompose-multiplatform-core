@@ -20,6 +20,23 @@ import androidx.compose.ui.text.AnnotatedString
 import org.jetbrains.skiko.ClipboardManager as SkikoCLipboardManager
 
 internal class PlatformClipboardManager : ClipboardManager {
+    private val delegate: ClipboardManager = platformClipboardDelegate ?: SkikoBasedClipboardManager()
+
+    override fun getText(): AnnotatedString? = delegate.getText()
+
+    override fun setText(annotatedString: AnnotatedString) = delegate.setText(annotatedString)
+
+    override fun hasText(): Boolean = delegate.hasText()
+}
+
+/**
+ * Platform-specific override for clipboard operations.
+ * Set this before any Compose scene is created (e.g. in ComposeSceneMediator init).
+ * When null, falls back to Skiko's ClipboardManager.
+ */
+internal var platformClipboardDelegate: ClipboardManager? = null
+
+private class SkikoBasedClipboardManager : ClipboardManager {
     val skikoClipboardManager = SkikoCLipboardManager()
 
     override fun getText(): AnnotatedString? =

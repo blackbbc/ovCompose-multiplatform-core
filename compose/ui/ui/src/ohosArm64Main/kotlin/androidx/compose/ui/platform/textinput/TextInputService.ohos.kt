@@ -34,7 +34,9 @@ import androidx.compose.ui.text.input.EditCommand
 import androidx.compose.ui.text.input.EditProcessor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.ImeOptions
+import androidx.compose.ui.text.input.MoveCursorCommand
 import androidx.compose.ui.text.input.PlatformTextInputService
+import androidx.compose.ui.text.input.SetSelectionCommand
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -461,6 +463,56 @@ internal class TextInputService : PlatformTextInputService {
                 input.onImeActionPerformed(imeAction)
             }
             return true
+        }
+
+        override fun moveCursor(direction: Int) {
+            if (DEBUG) {
+                log(TAG, "$DEBUG_CLASS.moveCursor($direction)")
+            }
+            // Direction: CURSOR_UP=1, CURSOR_DOWN=2, CURSOR_LEFT=3, CURSOR_RIGHT=4
+            val amount = when (direction) {
+                3 -> -1  // CURSOR_LEFT
+                4 -> 1   // CURSOR_RIGHT
+                else -> return // UP/DOWN not supported via simple MoveCursorCommand
+            }
+            sendEditCommand(MoveCursorCommand(amount))
+        }
+
+        override fun handleExtendAction(action: Int) {
+            if (DEBUG) {
+                log(TAG, "$DEBUG_CLASS.handleExtendAction($action)")
+            }
+            val state = getState() ?: return
+            // ExtendAction: SELECT_ALL=0, CUT=3, COPY=4, PASTE=5
+            when (action) {
+                0 -> { // SELECT_ALL
+                    sendEditCommand(SetSelectionCommand(0, state.text.length))
+                }
+                3 -> { // CUT
+                    // TODO: implement cut via clipboard
+                }
+                4 -> { // COPY
+                    // TODO: implement copy via clipboard
+                }
+                5 -> { // PASTE
+                    // TODO: implement paste via clipboard
+                }
+            }
+        }
+
+        override fun selectByMovement(direction: Int) {
+            if (DEBUG) {
+                log(TAG, "$DEBUG_CLASS.selectByMovement($direction)")
+            }
+            val state = getState() ?: return
+            val selection = state.selection
+            // Direction: CURSOR_UP=1, CURSOR_DOWN=2, CURSOR_LEFT=3, CURSOR_RIGHT=4
+            val newEnd = when (direction) {
+                3 -> maxOf(selection.end - 1, 0)       // CURSOR_LEFT
+                4 -> minOf(selection.end + 1, state.text.length) // CURSOR_RIGHT
+                else -> return
+            }
+            sendEditCommand(SetSelectionCommand(selection.start, newEnd))
         }
     }
 }

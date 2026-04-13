@@ -17,13 +17,4 @@
 
 package androidx.compose.foundation.text
 
-import androidx.compose.ui.input.key.KeyEvent
-
-// TODO("补API')
-internal actual val platformDefaultKeyMapping: KeyMapping = createKeyMapping()
-
-private fun createKeyMapping(): KeyMapping  {
-    return object : KeyMapping {
-        override fun map(event: KeyEvent): KeyCommand? = null
-    }
-}
+internal actual val platformDefaultKeyMapping: KeyMapping = defaultKeyMapping

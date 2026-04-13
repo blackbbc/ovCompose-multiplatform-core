@@ -17,13 +17,13 @@
 
 package androidx.compose.foundation.text.selection
 
+import androidx.compose.foundation.text.KeyCommand
+import androidx.compose.foundation.text.platformDefaultKeyMapping
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
 
-// TODO("补API；临时写死)
-internal actual fun isCopyKeyEvent(keyEvent: KeyEvent): Boolean =
-    false
+internal actual fun isCopyKeyEvent(keyEvent: KeyEvent) =
+    platformDefaultKeyMapping.map(keyEvent) == KeyCommand.COPY
 
-// TODO("补API；临时写死)
 internal actual fun Modifier.selectionMagnifier(manager: SelectionManager): Modifier =
     this

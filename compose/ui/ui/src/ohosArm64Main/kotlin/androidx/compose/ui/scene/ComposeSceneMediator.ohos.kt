@@ -42,7 +42,9 @@ import androidx.compose.ui.interop.OhosTrace
 import androidx.compose.ui.napi.JsEnv
 import androidx.compose.ui.platform.LocalKeyboardAvoidFocusOffset
 import androidx.compose.ui.platform.LocalKeyboardOverlapHeight
+import androidx.compose.ui.platform.OhosNativeClipboardManager
 import androidx.compose.ui.platform.PlatformClipboardProxy
+import androidx.compose.ui.platform.platformClipboardDelegate
 import androidx.compose.ui.platform.PlatformContext
 import androidx.compose.ui.platform.PlatformContextImpl
 import androidx.compose.ui.platform.PlatformSizeChangeDispatcher
@@ -89,6 +91,10 @@ internal class ComposeSceneMediator(
     private var sizeChange = false
 
     private val platformContext: PlatformContext by lazy {
+        // Register OHOS native clipboard for Compose's ClipboardManager
+        if (platformClipboardDelegate == null) {
+            platformClipboardDelegate = OhosNativeClipboardManager()
+        }
         PlatformContextImpl(
             windowContext.windowInfo,
             TextInputService(),
@@ -256,8 +262,7 @@ internal class ComposeSceneMediator(
         ))
         // Pre-focus interception: bypass the Compose focus tree if interceptor consumes the event.
         if (configuration.keyEventInterceptor?.invoke(keyEvent) == true) return true
-        scene.sendKeyEvent(keyEvent)
-        return true
+        return scene.sendKeyEvent(keyEvent)
     }
 
     @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
