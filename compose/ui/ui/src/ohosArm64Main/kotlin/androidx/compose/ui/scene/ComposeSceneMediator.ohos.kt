@@ -251,6 +251,27 @@ internal class ComposeSceneMediator(
         return true
     }
 
+    /**
+     * Phase 1 (onKeyPreIme): Only run the keyEventInterceptor (app-level shortcuts).
+     * Does NOT dispatch to the Compose focus tree.
+     * Returns true if consumed (prevents IME from processing).
+     */
+    @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
+    fun sendKeyPreIme(env: napi_env, event: napi_value): Boolean {
+        val keyEvent = KeyEvent(SkikoKeyboardEvent(
+            key = event.key,
+            modifiers = event.modifiers,
+            kind = event.keyType,
+            timestamp = event.timestamp,
+            platform = event
+        ))
+        return configuration.keyEventInterceptor?.invoke(keyEvent) == true
+    }
+
+    /**
+     * Phase 3 (onKeyEvent): Dispatch to the Compose focus tree for keys
+     * that IME did not consume (arrows, F-keys, etc.).
+     */
     @OptIn(InternalComposeApi::class, ExperimentalComposeApi::class)
     fun sendKeyEvent(env: napi_env, event: napi_value): Boolean {
         val keyEvent = KeyEvent(SkikoKeyboardEvent(
@@ -260,8 +281,6 @@ internal class ComposeSceneMediator(
             timestamp = event.timestamp,
             platform = event
         ))
-        // Pre-focus interception: bypass the Compose focus tree if interceptor consumes the event.
-        if (configuration.keyEventInterceptor?.invoke(keyEvent) == true) return true
         return scene.sendKeyEvent(keyEvent)
     }
 

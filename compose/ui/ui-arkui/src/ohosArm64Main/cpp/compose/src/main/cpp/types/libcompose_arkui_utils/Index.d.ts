@@ -47,6 +47,8 @@ export declare interface InternalArkUIViewController extends ArkUIViewController
 
   dispatchAxisEvent(axisEvent: any /*AxisEvent*/): boolean;
 
+  dispatchKeyPreIme(keyEvent: any /*KeyEvent*/): boolean;
+
   dispatchKeyEvent(keyEvent: any /*KeyEvent*/): boolean;
 
   onKeyboardShow(keyboardHeight: number): void

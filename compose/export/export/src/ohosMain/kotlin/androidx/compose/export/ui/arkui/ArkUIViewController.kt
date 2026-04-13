@@ -26,6 +26,7 @@ import androidx.compose.ui.arkui._ArkUIViewController_cancelSyncRefresh
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchAxisEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchHoverEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchKeyEvent
+import androidx.compose.ui.arkui._ArkUIViewController_dispatchKeyPreIme
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchMouseEvent
 import androidx.compose.ui.arkui._ArkUIViewController_dispatchTouchEvent
 import androidx.compose.ui.arkui._ArkUIViewController_getId
@@ -201,6 +202,13 @@ fun _Export_ArkUIViewController_dispatchAxisEvent(
     controllerRef: COpaquePointer,
     nativeAxisEvent: napi_value,
 ): Boolean = _ArkUIViewController_dispatchAxisEvent(controllerRef, nativeAxisEvent)
+
+@InternalExportApi
+@CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyPreIme")
+fun _Export_ArkUIViewController_dispatchKeyPreIme(
+    controllerRef: COpaquePointer,
+    nativeKeyEvent: napi_value,
+): Boolean = _ArkUIViewController_dispatchKeyPreIme(controllerRef, nativeKeyEvent)
 
 @InternalExportApi
 @CName("androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyEvent")

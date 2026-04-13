@@ -205,6 +205,25 @@ static napi_value DispatchAxisEvent(napi_env env, napi_callback_info info) {
     return nullptr;
 }
     
+static napi_value DispatchKeyPreIme(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_value thisArg = nullptr;
+    napi_get_cb_info(env, info, &argc, args, &thisArg, nullptr);
+
+    napi_value keyEvent = args[0];
+
+    void *controller = nullptr;
+    napi_unwrap(env, thisArg, &controller);
+
+    ArkUIViewController *typedController = reinterpret_cast<ArkUIViewController *>(controller);
+    bool consumed = ArkUIViewController_dispatchKeyPreIme(typedController, keyEvent);
+
+    napi_value result;
+    napi_get_boolean(env, consumed, &result);
+    return result;
+}
+
 static napi_value DispatchKeyEvent(napi_env env, napi_callback_info info) {
     size_t argc = 1;
     napi_value args[1] = {nullptr};
@@ -342,6 +361,7 @@ napi_value Wrapped(napi_env env, void *nativeController) {
     bindFunction(env, result, "dispatchTouchEvent", DispatchTouchEvent);
     bindFunction(env, result, "dispatchMouseEvent", DispatchMouseEvent);
     bindFunction(env, result, "dispatchAxisEvent", DispatchAxisEvent);
+    bindFunction(env, result, "dispatchKeyPreIme", DispatchKeyPreIme);
     bindFunction(env, result, "dispatchKeyEvent", DispatchKeyEvent);
     bindFunction(env, result, "onKeyboardShow", KeyboardWillShow);
     bindFunction(env, result, "onKeyboardHide", KeyboardWillHide);

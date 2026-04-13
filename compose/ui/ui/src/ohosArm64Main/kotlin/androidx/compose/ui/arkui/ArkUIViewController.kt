@@ -116,6 +116,7 @@ internal sealed interface InternalArkUIViewController : ArkUIViewController, Mes
     fun dispatchTouchEvent(nativeTouchEvent: napi_value, ignoreInteropView: Boolean) = false
     fun dispatchMouseEvent(nativeMouseEvent: napi_value) = false
     fun dispatchAxisEvent(nativeAxisEvent: napi_value) = false
+    fun dispatchKeyPreIme(nativeKeyEvent: napi_value) = false
     fun dispatchKeyEvent(nativeKeyEvent: napi_value) = false
     fun dispatchHoverEvent() {}
     fun keyboardWillShow(keyboardHeight: Float) {}
@@ -516,11 +517,18 @@ fun _ArkUIViewController_dispatchAxisEvent(
     controllerRef.getController()?.dispatchAxisEvent(nativeAxisEvent) ?: false
 
 @InternalComposeApi
+fun _ArkUIViewController_dispatchKeyPreIme(
+    controllerRef: COpaquePointer,
+    nativeKeyEvent: napi_value,
+): Boolean =
+    controllerRef.getController()?.dispatchKeyPreIme(nativeKeyEvent) ?: false
+
+@InternalComposeApi
 fun _ArkUIViewController_dispatchKeyEvent(
     controllerRef: COpaquePointer,
-    nativeMouseEvent: napi_value,
+    nativeKeyEvent: napi_value,
 ): Boolean =
-    controllerRef.getController()?.dispatchKeyEvent(nativeMouseEvent) ?: false
+    controllerRef.getController()?.dispatchKeyEvent(nativeKeyEvent) ?: false
 
 @InternalComposeApi
 fun _ArkUIViewController_dispatchHoverEvent(controllerRef: COpaquePointer) {

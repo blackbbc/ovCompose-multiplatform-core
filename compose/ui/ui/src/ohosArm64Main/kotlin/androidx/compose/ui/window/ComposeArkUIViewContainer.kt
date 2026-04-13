@@ -154,6 +154,13 @@ internal class ComposeArkUIViewContainer(
         return true
     }
 
+    override fun dispatchKeyPreIme(nativeKeyEvent: napi_value): Boolean {
+        if (!nativeSurfaceHasBeenDestroyed) {
+            return mediator?.sendKeyPreIme(requiredEnv, nativeKeyEvent) ?: false
+        }
+        return true
+    }
+
     override fun dispatchKeyEvent(nativeKeyEvent: napi_value): Boolean {
         if (!nativeSurfaceHasBeenDestroyed) {
             return mediator?.sendKeyEvent(requiredEnv, nativeKeyEvent) ?: false

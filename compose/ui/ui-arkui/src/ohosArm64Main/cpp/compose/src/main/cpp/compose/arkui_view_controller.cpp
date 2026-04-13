@@ -251,6 +251,14 @@ void ArkUIViewController_dispatchAxisEvent(ArkUIViewController *controller, void
     androidx_compose_ui_arkui_ArkUIViewController_dispatchAxisEvent(controller, nativeAxisEvent);
 }
     
+bool ArkUIViewController_dispatchKeyPreIme(ArkUIViewController *controller, void *nativeKeyEvent) {
+    if (controller == nullptr) {
+        LOGE("ArkUIViewController_dispatchKeyPreIme: controller is null");
+        return false;
+    }
+    return androidx_compose_ui_arkui_ArkUIViewController_dispatchKeyPreIme(controller, nativeKeyEvent);
+}
+
 void ArkUIViewController_dispatchKeyEvent(ArkUIViewController *controller, void *nativeKeyEvent) {
     if (controller == nullptr) {
         LOGE("ArkUIViewController_dispatchKeyEvent: controller is null");
