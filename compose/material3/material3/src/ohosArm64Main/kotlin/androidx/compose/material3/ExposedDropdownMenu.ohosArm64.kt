@@ -18,42 +18,29 @@
 package androidx.compose.material3
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.toIntRect
+import kotlin.math.max
 
-/**
- * <a href="https://m3.material.io/components/menus/overview" class="external" target="_blank">Material Design Exposed Dropdown Menu</a>.
- *
- * Menus display a list of choices on a temporary surface. They appear when users interact with a
- * button, action, or other control.
- *
- * Exposed dropdown menus, sometimes also called "spinners" or "combo boxes", display the currently
- * selected item in a text field to which the menu is anchored. In some cases, it can accept and
- * display user input (whether or not it’s listed as a menu choice), in which case it may be used to
- * implement autocomplete.
- *
- * ![Exposed dropdown menu image](https://developer.android.com/images/reference/androidx/compose/material3/exposed-dropdown-menu.png)
- *
- * The [ExposedDropdownMenuBox] is expected to contain a [TextField] (or [OutlinedTextField]) and
- * [ExposedDropdownMenu][ExposedDropdownMenuBoxScope.ExposedDropdownMenu] as content. The
- * [menuAnchor][ExposedDropdownMenuBoxScope.menuAnchor] modifier should be passed to the text field.
- *
- * An example of a read-only Exposed Dropdown Menu:
- * @sample androidx.compose.material3.samples.ExposedDropdownMenuSample
- *
- * An example of an editable Exposed Dropdown Menu:
- * @sample androidx.compose.material3.samples.EditableExposedDropdownMenuSample
- *
- * @param expanded whether the menu is expanded or not
- * @param onExpandedChange called when the exposed dropdown menu is clicked and the expansion state
- * changes.
- * @param modifier the [Modifier] to be applied to this ExposedDropdownMenuBox
- * @param content the content of this ExposedDropdownMenuBox, typically a [TextField] and an
- * [ExposedDropdownMenu][ExposedDropdownMenuBoxScope.ExposedDropdownMenu]. The
- * [menuAnchor][ExposedDropdownMenuBoxScope.menuAnchor] modifier should be passed to the text field
- * for proper menu behavior.
- */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @ExperimentalMaterial3Api
 actual fun ExposedDropdownMenuBox(
@@ -62,6 +49,58 @@ actual fun ExposedDropdownMenuBox(
     modifier: Modifier,
     content: @Composable ExposedDropdownMenuBoxScope.() -> Unit
 ) {
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    var anchorWidth by remember { mutableIntStateOf(0) }
+    var menuMaxHeight by remember { mutableIntStateOf(0) }
+    val verticalMarginInPx = with(density) { MenuVerticalMargin.roundToPx() }
+
+    val focusRequester = remember { FocusRequester() }
+    val expandedDescription = getString(Strings.MenuExpanded)
+    val collapsedDescription = getString(Strings.MenuCollapsed)
+
+    val scope = remember(expanded, onExpandedChange, windowInfo, density) {
+        object : ExposedDropdownMenuBoxScope() {
+            override fun Modifier.menuAnchor(): Modifier = this
+                .onGloballyPositioned {
+                    anchorWidth = it.size.width
+                    val boundsInWindow = it.boundsInWindow()
+                    val visibleWindowBounds = windowInfo.containerSize.toIntRect()
+                    val heightAbove = boundsInWindow.top - visibleWindowBounds.top
+                    val heightBelow = visibleWindowBounds.height - boundsInWindow.bottom
+                    menuMaxHeight = max(heightAbove, heightBelow).toInt() - verticalMarginInPx
+                }
+                .expandable(
+                    expanded = expanded,
+                    onExpandedChange = { onExpandedChange(!expanded) },
+                    expandedDescription = expandedDescription,
+                    collapsedDescription = collapsedDescription,
+                )
+                .focusRequester(focusRequester)
+
+            override fun Modifier.exposedDropdownSize(matchTextFieldWidth: Boolean): Modifier =
+                layout { measurable, constraints ->
+                    val menuWidth = constraints.constrainWidth(anchorWidth)
+                    val menuConstraints = constraints.copy(
+                        maxHeight = constraints.constrainHeight(menuMaxHeight),
+                        minWidth = if (matchTextFieldWidth) menuWidth else constraints.minWidth,
+                        maxWidth = if (matchTextFieldWidth) menuWidth else constraints.maxWidth,
+                    )
+                    val placeable = measurable.measure(menuConstraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.place(0, 0)
+                    }
+                }
+        }
+    }
+
+    Box(modifier) {
+        scope.content()
+    }
+
+    SideEffect {
+        if (expanded) focusRequester.requestFocus()
+    }
 }
 
 @Composable
@@ -72,4 +111,11 @@ internal actual fun ExposedDropdownMenuBoxScope.ExposedDropdownMenuDefaultImpl(
     scrollState: ScrollState,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier.exposedDropdownSize(),
+        scrollState = scrollState,
+        content = content
+    )
 }

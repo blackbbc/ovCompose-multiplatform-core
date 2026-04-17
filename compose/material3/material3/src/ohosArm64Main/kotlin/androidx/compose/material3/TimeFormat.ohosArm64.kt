@@ -19,9 +19,17 @@ package androidx.compose.material3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.text.intl.ohosSystemLanguageTag
+
+/**
+ * Locales that typically use 12-hour format.
+ */
+private val twelveHourLocales = setOf("en-US", "en-AU", "en-PH", "en")
 
 @ReadOnlyComposable
 @Composable
 internal actual fun is24HourFormat(): Boolean {
-    TODO("Not yet implemented")
+    val tag = ohosSystemLanguageTag
+    // Most locales use 24-hour format; a few English-speaking locales default to 12-hour
+    return tag !in twelveHourLocales && !tag.startsWith("en-US")
 }

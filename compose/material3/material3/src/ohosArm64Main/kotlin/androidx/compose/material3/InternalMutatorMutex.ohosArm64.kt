@@ -21,18 +21,16 @@ package androidx.compose.material3
  * tryMutate method. Do not modify, except for tryMutate. ***/
 
 internal actual class AtomicReference<V> actual constructor(value: V) {
-    actual fun get(): V {
-        TODO("Not yet implemented")
-    }
+    private val delegate = kotlin.concurrent.AtomicReference(value)
+
+    actual fun get(): V = delegate.value
 
     actual fun set(value: V) {
+        delegate.value = value
     }
 
-    actual fun getAndSet(value: V): V {
-        TODO("Not yet implemented")
-    }
+    actual fun getAndSet(value: V): V = delegate.getAndSet(value)
 
-    actual fun compareAndSet(expect: V, newValue: V): Boolean {
-        TODO("Not yet implemented")
-    }
+    actual fun compareAndSet(expect: V, newValue: V): Boolean =
+        delegate.compareAndSet(expect, newValue)
 }

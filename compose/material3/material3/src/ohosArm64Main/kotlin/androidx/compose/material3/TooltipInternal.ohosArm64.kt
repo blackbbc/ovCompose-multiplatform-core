@@ -18,13 +18,17 @@
 package androidx.compose.material3
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.WindowInfo
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal actual fun getCurrentConfiguration(): Configuration {
-    TODO("Not yet implemented")
-}
+internal actual fun getCurrentConfiguration() = Configuration(LocalWindowInfo.current)
 
+@OptIn(ExperimentalComposeUiApi::class)
 internal actual fun Configuration.getScreenWidthPx(density: Density): Int {
-    TODO("Not yet implemented")
+    val windowInfo = delegate as WindowInfo
+    return windowInfo.containerSize.width
 }

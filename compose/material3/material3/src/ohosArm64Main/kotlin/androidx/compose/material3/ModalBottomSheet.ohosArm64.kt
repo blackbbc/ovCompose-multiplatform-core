@@ -17,9 +17,20 @@
 
 package androidx.compose.material3
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 
 /**
  * Properties used to customize the behavior of a [ModalBottomSheet].
@@ -34,13 +45,24 @@ import androidx.compose.runtime.Immutable
  */
 @ExperimentalMaterial3Api
 actual class ModalBottomSheetProperties actual constructor(
-    isFocusable: Boolean,
-    shouldDismissOnBackPress: Boolean
-) {
-    actual val isFocusable: Boolean
-        get() = TODO("Not yet implemented")
+    actual val isFocusable: Boolean,
     actual val shouldDismissOnBackPress: Boolean
-        get() = TODO("Not yet implemented")
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ModalBottomSheetProperties) return false
+
+        if (isFocusable != other.isFocusable) return false
+        if (shouldDismissOnBackPress != other.shouldDismissOnBackPress) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = 31 * isFocusable.hashCode()
+        result = 31 * result + shouldDismissOnBackPress.hashCode()
+        return result
+    }
 }
 
 /**
@@ -63,14 +85,13 @@ actual object ModalBottomSheetDefaults {
     actual fun properties(
         isFocusable: Boolean,
         shouldDismissOnBackPress: Boolean
-    ): ModalBottomSheetProperties {
-        TODO("Not yet implemented")
-    }
+    ) = ModalBottomSheetProperties(isFocusable, shouldDismissOnBackPress)
 }
 
 /**
  * Popup specific for modal bottom sheet.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal actual fun ModalBottomSheetPopup(
     properties: ModalBottomSheetProperties,
@@ -78,4 +99,23 @@ internal actual fun ModalBottomSheetPopup(
     windowInsets: WindowInsets,
     content: @Composable () -> Unit
 ) {
+    Popup(
+        popupPositionProvider = object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ) = IntOffset.Zero
+        },
+        onDismissRequest = onDismissRequest,
+        properties = PopupProperties(
+            focusable = true,
+            usePlatformInsets = false
+        )
+    ) {
+        Box(Modifier.windowInsetsPadding(windowInsets)) {
+            content()
+        }
+    }
 }

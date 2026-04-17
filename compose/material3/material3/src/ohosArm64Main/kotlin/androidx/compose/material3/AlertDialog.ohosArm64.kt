@@ -17,11 +17,18 @@
 
 package androidx.compose.material3
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.tokens.DialogTokens
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 /**
@@ -67,6 +74,7 @@ import androidx.compose.ui.window.DialogProperties
  * @param properties typically platform specific properties to further configure the dialog.
  * @see BasicAlertDialog
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 actual fun AlertDialog(
     onDismissRequest: () -> Unit,
@@ -83,7 +91,32 @@ actual fun AlertDialog(
     textContentColor: Color,
     tonalElevation: Dp,
     properties: DialogProperties
+) = BasicAlertDialog(
+    onDismissRequest = onDismissRequest,
+    modifier = modifier,
+    properties = properties
 ) {
+    AlertDialogContent(
+        buttons = {
+            AlertDialogFlowRow(
+                mainAxisSpacing = ButtonsMainAxisSpacing,
+                crossAxisSpacing = ButtonsCrossAxisSpacing
+            ) {
+                dismissButton?.invoke()
+                confirmButton()
+            }
+        },
+        icon = icon,
+        title = title,
+        text = text,
+        shape = shape,
+        containerColor = containerColor,
+        tonalElevation = tonalElevation,
+        buttonContentColor = DialogTokens.ActionLabelTextColor.value,
+        iconContentColor = iconContentColor,
+        titleContentColor = titleContentColor,
+        textContentColor = textContentColor,
+    )
 }
 
 /**
@@ -118,6 +151,20 @@ actual fun BasicAlertDialog(
     properties: DialogProperties,
     content: @Composable () -> Unit
 ) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties,
+    ) {
+        val dialogPaneDescription = getString(Strings.Dialog)
+        Box(
+            modifier = modifier
+                .sizeIn(minWidth = DialogMinWidth, maxWidth = DialogMaxWidth)
+                .then(Modifier.semantics { paneTitle = dialogPaneDescription }),
+            propagateMinConstraints = true
+        ) {
+            content()
+        }
+    }
 }
 
 /**
@@ -125,29 +172,22 @@ actual fun BasicAlertDialog(
  */
 actual object AlertDialogDefaults {
     /** The default shape for alert dialogs */
-    actual val shape: Shape
-        get() = TODO("Not yet implemented")
+    actual val shape: Shape @Composable get() = DialogTokens.ContainerShape.value
 
     /** The default container color for alert dialogs */
-    actual val containerColor: Color
-        get() = TODO("Not yet implemented")
+    actual val containerColor: Color @Composable get() = DialogTokens.ContainerColor.value
 
     /** The default icon color for alert dialogs */
-    actual val iconContentColor: Color
-        get() = TODO("Not yet implemented")
+    actual val iconContentColor: Color @Composable get() = DialogTokens.IconColor.value
 
     /** The default title color for alert dialogs */
-    actual val titleContentColor: Color
-        get() = TODO("Not yet implemented")
+    actual val titleContentColor: Color @Composable get() = DialogTokens.HeadlineColor.value
 
     /** The default text color for alert dialogs */
-    actual val textContentColor: Color
-        get() = TODO("Not yet implemented")
+    actual val textContentColor: Color @Composable get() = DialogTokens.SupportingTextColor.value
 
     /** The default tonal elevation for alert dialogs */
-    actual val TonalElevation: Dp
-        get() = TODO("Not yet implemented")
-
+    actual val TonalElevation: Dp = DialogTokens.ContainerElevation
 }
 
 /**
@@ -187,5 +227,7 @@ actual fun AlertDialog(
     modifier: Modifier,
     properties: DialogProperties,
     content: @Composable () -> Unit
-) {
-}
+) = BasicAlertDialog(onDismissRequest, modifier, properties, content)
+
+private val ButtonsMainAxisSpacing = 8.dp
+private val ButtonsCrossAxisSpacing = 12.dp

@@ -18,9 +18,9 @@
 package androidx.compose.material3
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 
 @Composable
-internal actual fun WindowInsets.Companion.systemBarsForVisualComponents(): WindowInsets {
-    TODO("Not yet implemented")
-}
+internal actual fun WindowInsets.Companion.systemBarsForVisualComponents(): WindowInsets =
+    WindowInsets.systemBars

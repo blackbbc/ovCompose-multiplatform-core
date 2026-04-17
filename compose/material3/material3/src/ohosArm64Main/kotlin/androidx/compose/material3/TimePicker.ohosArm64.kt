@@ -19,9 +19,18 @@ package androidx.compose.material3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalWindowInfo
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ReadOnlyComposable
 @Composable
 internal actual fun defaultTimePickerLayoutType(): TimePickerLayoutType {
-    TODO("Not yet implemented")
+    return with(LocalWindowInfo.current) {
+        if (containerSize.height < containerSize.width) {
+            TimePickerLayoutType.Horizontal
+        } else {
+            TimePickerLayoutType.Vertical
+        }
+    }
 }

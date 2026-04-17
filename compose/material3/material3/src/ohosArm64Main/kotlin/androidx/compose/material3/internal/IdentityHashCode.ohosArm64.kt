@@ -17,6 +17,7 @@
 
 package androidx.compose.material3.internal
 
-internal actual fun identityHashCode(instance: Any?): Int {
-    TODO("Not yet implemented")
-}
+import kotlin.native.identityHashCode
+
+internal actual fun identityHashCode(instance: Any?): Int =
+    instance.identityHashCode()

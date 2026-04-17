@@ -19,6 +19,8 @@ package androidx.compose.material3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 
 /**
  * It depends on the state of accessibility services to determine the current state of touch
@@ -26,5 +28,5 @@ import androidx.compose.runtime.State
  */
 @Composable
 internal actual fun touchExplorationState(): State<Boolean> {
-    TODO("Not yet implemented")
+    return remember { derivedStateOf { false } }
 }
